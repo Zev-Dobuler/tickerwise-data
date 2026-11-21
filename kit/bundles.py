@@ -38,6 +38,21 @@ for r in L('fundamentals'):
         o[k] = [v, r.get(k + ' Fill'), r.get(k + ' Font')]
     if o: F[r['ticker']] = o
 
+# Fill gaps for wish-list stocks not in Zev's sheet (Nov 21, 2026): Smart Score, consensus and target from TipRanks, Zacks Rank from Zacks (no Excel colors; Zev Score stays blank).
+_px = {r['t']: r.get('px') for r in L('wish') if r.get('k') == 's'}
+for r in L('wishx'):
+    if r.get('k') == 't' and r.get('px'): _px.setdefault(r['ticker'], r['px'])
+for r in L('wishx'):
+    t = r.get('ticker'); o = F.get(t, {}); k = r.get('k')
+    if k == 'ta':
+        if r.get('smart') is not None and 'Smart Score' not in o: o['Smart Score'] = [r['smart'], None, None]
+        if r.get('consensus') and 'Analyst Consensus' not in o: o['Analyst Consensus'] = [r['consensus'], None, None]
+        if r.get('target') and _px.get(t) and 'Analyst Price Target %' not in o: o['Analyst Price Target %'] = [round((r['target'] / _px[t] - 1) * 100, 2), None, None]
+    elif k == 't':
+        zr = ((r.get('zk') or {}).get('rank') or '')[:1]
+        if zr.isdigit() and 'Zacks Score' not in o: o['Zacks Score'] = [int(zr), None, None]
+    if o and t: F[t] = o
+
 MARKET = ['rates', 'spx', 'fear', 'gold', 'fedodds', 'since2000', 'bets', 'breadth', 'sectors', 'recess', 'macro', 'midterm', 'crashes', 'updates']
 alld = {os.path.basename(f)[:-5]: json.load(open(f)) for f in glob.glob(D + '*.json')}
 dpub = {k: alld[k] for k in MARKET if k in alld}
