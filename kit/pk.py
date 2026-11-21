@@ -5,7 +5,7 @@ def first(s, n=170):
     if not s: return ''
     s = re.split(r'(?<=[.])\s+', s)[0]
     return s if len(s) <= n else s[:n].rsplit(' ', 1)[0] + '…'
-# Analyst estimate quarters (next 4) are shown only once (almost) every stock has them, so their presence never marks a holding.
+# Analyst estimate quarters (next 5, all Fiscal.ai gives) are shown only once (almost) every stock has them, so their presence never marks a holding.
 _has = [o for o in d['stocks'] if any(x['k'] != 'E' for x in o['fq'])]
 _est = [o for o in _has if sum(1 for x in o['fq'] if x['k'] == 'E' and x.get('rev') is not None) >= 2]
 _EST_ON = bool(_has) and len(_est) >= 0.9 * len(_has)
@@ -22,7 +22,7 @@ for o in d['stocks']:
         except Exception: return p
         return 'Q%d %s' % ((mm - 1) // 3 + 1, str(yy)[2:])
     _a = [x for x in o['fq'] if x['k'] != 'E']
-    _e = [x for x in o['fq'] if x['k'] == 'E' and x.get('rev') is not None][:4] if _EST_ON else []
+    _e = [x for x in o['fq'] if x['k'] == 'E' and x.get('rev') is not None][:5] if _EST_ON else []
     o['fq'] = [[_ql(x['p']), 0, x['rev'], x['npm'], x['y']] for x in _a[-9:]] + [[_ql(x['p']), 1, x['rev'], x['npm'], x['y']] for x in _e]
     o['earn']['h'] = [[h['q'], h['d'], h['e'], h['ee'], h['eb'], h['rb'], h['rs'], h['mv'], h.get('ra'), h.get('re')] for h in o['earn']['h']]
     if 'gw' in o:
