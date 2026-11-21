@@ -31,6 +31,28 @@ SECTOR = [('Semicon', 'Semiconductors'), ('Photonic', 'Semiconductors'), ('DRAM'
           ('Bank', 'Financials'), ('Financ', 'Financials'), ('Fintech', 'Financials'), ('Asset', 'Financials'), ('Insurance', 'Financials'),
           ('Health', 'Healthcare'), ('Medical', 'Healthcare'), ('Robot', 'Industrials'), ('Construction', 'Industrials'), ('Machinery', 'Industrials'),
           ('Material', 'Materials'), ('Gold', 'Materials'), ('Discount', 'Consumer'), ('Beverage', 'Consumer'), ('Household', 'Consumer'), ('Consumer', 'Consumer'), ('Staples', 'Consumer')]
+# Theme merges (Zev, Nov 21, 2026): 44 themes down to 21. Ticker moves first, then theme renames.
+T_MOVE = {'DELL': 'AI Infrastructure', 'SMCI': 'AI Infrastructure', 'SPY': 'Index, Dividend & Value ETFs',
+          'BITX': 'Fintech & Crypto', 'BMNR': 'Fintech & Crypto',
+          'CCJ': 'Power, Nuclear & Storage', 'CEG': 'Power, Nuclear & Storage', 'UUUU': 'Power, Nuclear & Storage'}
+T_MERGE = {'AI Cloud & Data Centers': 'AI Infrastructure', 'AI Networking': 'AI Infrastructure', 'AI Power & Cooling': 'AI Infrastructure',
+           'Semiconductors': 'Semiconductors & Memory', 'Semiconductors - DRAM': 'Semiconductors & Memory',
+           'Mag 7 & Advertising': 'Big Tech & Internet', 'Mag 7 & Cloud': 'Big Tech & Internet', 'Mag 7 & Big Tech': 'Big Tech & Internet',
+           'Beverages - Non-Alcoholic': 'Consumer', 'Consumer Services': 'Consumer', 'Consumer Staples': 'Consumer', 'Discount Stores': 'Consumer', 'Household & Personal Products': 'Consumer',
+           'Dividend & Defensive': 'Index, Dividend & Value ETFs', 'Value': 'Index, Dividend & Value ETFs', 'Leveraged Index ETFs': 'Index, Dividend & Value ETFs', 'Asset Management - Income': 'Index, Dividend & Value ETFs',
+           'Oil & Gas': 'Oil, Gas & Utilities', 'Utilities': 'Oil, Gas & Utilities',
+           'Power & Nuclear': 'Power, Nuclear & Storage', 'Batteries & Energy Storage': 'Power, Nuclear & Storage',
+           'Banks': 'Banks & Financials', 'Financials': 'Banks & Financials', 'Financial - Capital Markets': 'Banks & Financials', 'Financial - Credit Services': 'Banks & Financials', 'Insurance - Diversified': 'Banks & Financials',
+           'Fintech & Brokerage': 'Fintech & Crypto', 'Fintech & Mortgages': 'Fintech & Crypto',
+           'Healthcare & Drug Manufacturers': 'Healthcare', 'Medical Devices': 'Healthcare',
+           'Construction & Infrastructure': 'Industrials & Construction', 'Agricultural - Machinery': 'Industrials & Construction',
+           'Gold': 'Metals, Mining & Gold', 'Materials': 'Metals, Mining & Gold'}
+T_SECTOR = {'AI Infrastructure': 'AI Infrastructure', 'Semiconductors & Memory': 'Semiconductors', 'Big Tech & Internet': 'Software & Internet',
+            'Consumer': 'Consumer', 'Index, Dividend & Value ETFs': 'Diversified', 'Oil, Gas & Utilities': 'Energy & Power',
+            'Power, Nuclear & Storage': 'Energy & Power', 'Banks & Financials': 'Financials', 'Fintech & Crypto': 'Financials',
+            'Healthcare': 'Healthcare', 'Industrials & Construction': 'Industrials', 'Metals, Mining & Gold': 'Materials'}
+def merge_theme(t, th):
+    return T_MOVE.get(t) or T_MERGE.get(th, th)
 def sector(theme):
     for k, v in SECTOR:
         if k.lower() in theme.lower(): return v
@@ -91,7 +113,8 @@ for t in tick:
         sr = X.get('sr') or {}; risk_sum = sr.get('summary'); risks = sr.get('risks'); top = sr.get('top')
         run = {}
         news = []
-    o['sec'] = sector(o['th'])
+    o['th'] = merge_theme(t, o['th'])
+    o['sec'] = T_SECTOR.get(o['th']) or sector(o['th'])
     # technicals as percentages only
     o['tech'] = {'off': r1(pct(px, hi)), 'up': r1(pct(px, lo)), 'v50': r1(pct(px, m50)), 'v200': r1(pct(px, m200)), 'x': r1(pct(m50, m200)), 'rsi': rsi}
     if hi and lo and px and hi > lo: o['tech']['pos'] = round((px - lo) / (hi - lo) * 100)
