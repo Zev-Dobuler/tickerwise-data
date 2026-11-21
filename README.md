@@ -1,2 +1,3 @@
 # tickerwise-data
-Data from Claude from stock-schwab-chart-list skill. To be used to sent to Wix.
+
+Encrypted nightly data for Tickerwise. The files here can only be read with the owner's key.
