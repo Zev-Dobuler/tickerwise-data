@@ -1,0 +1,56 @@
+"""Split the skill's published data into a sibling-safe public bundle and a private (portfolio) bundle."""
+import json, glob, os, sys
+B = '/home/claude/tw2/'; D = B + 'data/'; W = B + 'work/'
+OUT = sys.argv[1] if len(sys.argv) > 1 else B + 'prev/'
+L = lambda n: json.load(open(D + n + '.json'))
+rows = json.load(open(W + 'rows.json')); meta = json.load(open(W + 'meta.json'))
+xj = json.load(open(W + 'x.json')); MK = json.load(open(W + 'mk.json'))
+schwab = L('schwab'); H = [r['Tickers'] for r in schwab]; HS = set(H)
+
+# ---- public stock rows: alphabetical, holdings-only fields removed ----
+rows.sort(key=lambda r: r[0])
+priv_run = {}
+for r in rows:
+    if r[14]: priv_run[r[0]] = r[14]
+    r[14] = 0
+# held ETFs: give them the same depth as wish-list ETFs so they don't stand out
+_fin = {r['ticker'] for r in L('fincharts')}; _er = {r['ticker'] for r in L('erscore') if r.get('k') == 't' and r.get('ticker')}
+HETF = [t for t in H if t not in _fin and t not in _er]
+for r in rows:
+    if r[0] in HETF:
+        r[6][2] = r[6][3] = r[6][5] = None; r[13] = 0
+X = xj['X']; priv_x = {}
+for t, v in X.items():
+    for k in ('nw', 'v', 'bs'):
+        if k in v: priv_x.setdefault(t, {})[k] = v.pop(k)
+for t in HETF: X.pop(t, None)
+X = {t: v for t, v in X.items() if v}
+
+FK = ['Zev Score', 'Zacks Score', 'Smart Score', 'Analyst Consensus', 'Analyst Price Target %', 'PEG Ratio', 'EPS Growth', 'P/E', 'Forward P/E',
+      'P/E Growth', 'P/S', 'Forward P/S', 'P/S Growth', 'Revenue 1Y Growth', 'Revenue Forward 1Y CAGR', 'Y/Y Revenue Growth', 'Accelerating Growth',
+      'Operating Margin', 'Net Profit Margin', 'Net Income 1Y Growth', 'Free Cash Flow Margin', 'Total Employees', 'Market Cap', 'Next ER Date']
+F = {}
+for r in L('fundamentals'):
+    o = {}
+    for k in FK:
+        v = r.get(k)
+        if v in (None, '', '-'): continue
+        o[k] = [v, r.get(k + ' Fill'), r.get(k + ' Font')]
+    if o: F[r['ticker']] = o
+
+MARKET = ['rates', 'spx', 'fear', 'gold', 'fedodds', 'since2000', 'bets', 'breadth', 'sectors', 'recess', 'macro', 'midterm', 'crashes', 'updates']
+alld = {os.path.basename(f)[:-5]: json.load(open(f)) for f in glob.glob(D + '*.json')}
+dpub = {k: alld[k] for k in MARKET if k in alld}
+dpub['options'] = [r for r in alld['options'] if r.get('k') != 'h' or r.get('t') in ('SPY', 'QQQ')]
+dpriv = alld
+
+pub = {'asof': meta['asof'], 'sectors': meta['sectors'], 'RK': meta['RK'], 'R': rows, 'X': X, 'BENCH': xj['BENCH'], 'MK': MK, 'F': F}
+priv = {'H': H, 'schwab': schwab, 'run': priv_run, 'X': priv_x, 'D': dpriv, 'page': open(B + 'prev/report_inline.html').read()}
+for n, o in (('pub', pub), ('priv', priv)):
+    s = json.dumps(o, separators=(',', ':'), ensure_ascii=False)
+    open(OUT + n + '.json', 'w').write(s); print(n, len(s))
+# leak check: no holdings-only marker in public
+pubs = json.dumps(pub)
+for w in ('Holdings Value', '% Holdings', 'Purchase Price', 'Shares Owned'):
+    assert w not in pubs, w
+print('public stocks', len(rows), 'holdings', len(H), 'market datasets', sorted(dpub))
