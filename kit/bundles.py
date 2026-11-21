@@ -105,6 +105,20 @@ if os.path.exists(_wp):
 # price history for every stock in one identical format (kit/bp.py)
 if os.path.exists('/home/claude/tw2/data/twpx.json'):
     _px = json.load(open('/home/claude/tw2/data/twpx.json')); _px['T'] = {k: v for k, v in _px['T'].items() if k in {r[0] for r in rows}}; pub['PX'] = _px
+# One analyst-upside number everywhere: TipRanks average target vs the latest close (the same close the site shows),
+# so the sheet's "Analyst Price Target %" (read at an earlier price) never disagrees with the Analyst Upside box.
+try:
+    if pub.get('PX') and pub.get('AN') and pub.get('F'):
+        for _t, _a in pub['AN'].items():
+            _p = pub['PX']['T'].get(_t)
+            if not _p or not _a or not _a[0] or _t not in pub['F']: continue
+            _last = sum(_p[4]) * 10 ** _p[0]
+            if _last > 0:
+                _f = pub['F'][_t].get('Analyst Price Target %') or [None, None, None]
+                _v = round((_a[0] / _last - 1) * 100, 2)
+                pub['F'][_t]['Analyst Price Target %'] = [_v, _f[1], '#00B050' if _v > 0 else '#FF0000' if _v < 0 else None]
+except Exception as _e:
+    print('analyst upside sync skipped:', _e)
 priv = {'H': H, 'schwab': schwab, 'run': priv_run, 'X': priv_x, 'D': dpriv, 'page': open(B + 'prev/report_inline.html').read()}
 for n, o in (('pub', pub), ('priv', priv)):
     s = json.dumps(o, separators=(',', ':'), ensure_ascii=False)
