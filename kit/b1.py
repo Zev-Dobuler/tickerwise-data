@@ -143,7 +143,7 @@ for t in tick:
           'cy': _zk.get('cy'), 'cy90': _zk.get('cy90'), 'nq': E.get('next_q'), 'ie': E.get('ieps'), 'iet': E.get('ieps_t'),
           'ied': [None if v is None else round(v, 3) for v in (E.get('ieps_d') or [])], 'ir': E.get('irev'),
           'ird': [None if v is None else round(v / 1e6, 1) for v in (E.get('irev_d') or [])], 'mt': E.get('mt'), 'm3': E.get('m3'), 'mb': E.get('mb'),
-          'pt': E.get('pt'), 'gd': E.get('guid'), 'gdd': E.get('guid_d'), 'mv': [[q.get('d'), _r1(q.get('m7')), _r1(q.get('m')), _r1(q.get('m30'))] for q in _mv if q]}
+          'pt': E.get('pt'), 'gd': E.get('guid'), 'gdd': E.get('guid_d'), 'cb': E.get('comb'), 'r8': E.get('rev8'), 'bp': E.get('bothp'), 'lp': E.get('lastprof'), 'el': len(E.get('elow') or []), 'ey': (E.get('eyo3') or [None])[-1], 'le': ((E.get('q8') or [{}])[-1] or {}).get('eps'), 'mv': [[q.get('d'), _r1(q.get('m7')), _r1(q.get('m')), _r1(q.get('m30'))] for q in _mv if q]}
     EX = {k: v for k, v in EX.items() if v not in (None, [], '')}
     o['earn'] = {'l4': E.get('l4'), 'l8': E.get('l8'), 'last': E.get('last'), 'streak': E.get('streak'), 'div': E.get('div'), 'mt': E.get('mt'),
                  'rt': E.get('rt'), 'et': E.get('et'), 'yoy': E.get('yoy3'), 'prof4': E.get('prof4'), 'next': ned, 'h': eh, 'rl4': rl4, 'rl8': rl8, 'x': EX, 'n8': len(eh)}
