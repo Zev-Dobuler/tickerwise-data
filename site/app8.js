@@ -1,0 +1,187 @@
+/* ---------- Insights: a content library (Nov 22, 2026). Articles are written by the Tickerwise desks from the site's own data, refreshed with every nightly update;
+   outside contributors join through the Contributor Program. Free and Premium articles (Premium readable free during the preview). Follow authors and tickers; alerts at launch. ---------- */
+(function () {
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+const { S, BY, esc, nz, sg, cls, dfmt } = window.TWX || {};
+const TW = window.TW || {}, app = $('#app'), AN = TW.AN || {}, X = TW.X || {}, NX = TW.NX || {}, F = TW.F || {}, ASOF = TW.asof, API = 'https://www.wixapis.com';
+const st = document.createElement('style'); st.id = 'in-css'; st.textContent = `
+.in-sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.in-sub a{padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);font:600 14px Inter,sans-serif;text-decoration:none;color:#334155;background:#fff}.in-sub a.on{background:#0B1B3F;color:#fff;border-color:#0B1B3F}
+.in-hero{display:grid;grid-template-columns:2fr 1fr;gap:16px}.in-feat{display:block;text-decoration:none;color:#fff;border-radius:18px;padding:26px;background:linear-gradient(135deg,#0B1B3F,#1E3A8A);min-height:200px}.in-feat h2{font:800 28px/1.2 'Space Grotesk',sans-serif;margin:10px 0 8px;color:#fff}.in-feat p{color:#C4D3F5;margin:0;font-size:15px;line-height:1.5}
+.in-l{display:flex;flex-direction:column}.in-a{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}.in-a:hover h4{color:#2F6BFF}.in-a h4{margin:4px 0;font:700 17px/1.3 'Space Grotesk',sans-serif}.in-a p{margin:0;color:#475569;font-size:14px;line-height:1.5}
+.in-m{font-size:12.5px;color:var(--mut);display:flex;gap:8px;flex-wrap:wrap;align-items:center}.in-b{display:inline-block;font:700 11px Inter,sans-serif;padding:3px 8px;border-radius:999px}.in-b.pr{background:#F5F3FF;color:#7C3AED}.in-b.fr{background:#E7F8EF;color:#00995A}.in-b.k{background:#F1F5F9;color:#475569}.in-b.ec{background:#FFF7E0;color:#9A6B00}
+.in-tk{display:inline-block;font:700 12px Inter,sans-serif;padding:2px 7px;border-radius:6px;background:#EEF4FF;color:#2F6BFF;text-decoration:none;margin-right:4px}
+.in-filter{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}.in-filter input{padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;font:500 14px Inter,sans-serif;min-width:200px;flex:1}
+.in-art{max-width:780px}.in-art h1{font:800 34px/1.2 'Space Grotesk',sans-serif;margin:8px 0}.in-art .dek{font-size:18px;color:#475569;line-height:1.5;margin:0 0 14px}.in-body p{font-size:16.5px;line-height:1.75;color:#1E293B;margin:0 0 16px}.in-body h3{font:700 21px 'Space Grotesk',sans-serif;margin:26px 0 10px}.in-body ul{font-size:16px;line-height:1.7;color:#1E293B}.in-body table{margin:6px 0 18px}
+.in-auth{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 0 20px}.in-av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 16px 'Space Grotesk',sans-serif}
+.in-btn{border:1.5px solid #2F6BFF;background:#2F6BFF;color:#fff;border-radius:10px;padding:6px 12px;font:700 13px Inter,sans-serif;cursor:pointer}.in-btn.on{background:#fff;color:#2F6BFF}
+.in-lock{position:relative;margin:0 0 18px}.in-lock .in-pv{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:10px 14px;font-size:13.5px;color:#4C1D95}
+.in-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}.in-c{border:1.5px solid var(--line);border-radius:16px;padding:16px;background:#fff}
+.in-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.in-f label{display:flex;flex-direction:column;gap:4px;font:600 12.5px Inter,sans-serif;color:#334155}.in-f input,.in-f textarea{padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;font:500 14px Inter,sans-serif;width:100%;box-sizing:border-box}.in-f .wide{grid-column:1/-1}
+.in-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.in-steps>div{background:#F7F9FC;border-radius:14px;padding:14px}.in-steps b{display:block;font:700 15px 'Space Grotesk',sans-serif;margin-bottom:4px}.in-steps p{margin:0;font-size:13.5px;color:#334155;line-height:1.5}
+@media (max-width:860px){.in-hero{grid-template-columns:1fr}.in-art h1{font-size:27px}}`;
+if (!$('#in-css')) document.head.appendChild(st);
+
+/* ---------- authors (internal desks; outside contributors join via the Contributor Program) ---------- */
+const AU = { desk: ['Tickerwise Research Desk', 'Company deep dives built from every data point on the site.', '#0B1B3F'], ana: ['Tickerwise Analyst Desk', 'What Wall Street analysts did this week, and what it means.', '#2F6BFF'],
+  flow: ['Tickerwise Money Flow Desk', 'Insiders, superinvestors and members of Congress: who is buying and selling.', '#00B86B'], mkt: ['Tickerwise Markets Desk', 'Market health, earnings season and the themes moving stocks.', '#F28C28'] };
+const avA = k => `<div class="in-av" style="background:${AU[k][2]}">TW</div>`;
+const disclose = '<p class="muted" style="font-size:12.5px;line-height:1.5;margin:18px 0 0">Written by a Tickerwise desk with AI assistance, entirely from the data shown on Tickerwise (scores, prices, analyst ratings, filings), as of the ' + dfmt(ASOF) + ' close. For information only; not investment advice.</p>';
+
+/* ---------- helpers ---------- */
+const pc0 = v => nz(v) ? sg(v, 0) : '—', fx = v => nz(v) ? (+v).toFixed(1) + 'x' : '—', usd = v => nz(v) ? '$' + (+v >= 100 ? (+v).toFixed(0) : (+v).toFixed(2)) : '—';
+const fval = (s, k) => { const a = (F[s.t] || {})[k]; return a && a[0] !== '-' && a[0] !== '' ? a[0] : null; };
+const trendOf = T => !nz(T.v50) || !nz(T.v200) ? 'unclear' : T.v50 > 0 && T.v200 > 0 ? 'an uptrend' : T.v50 < 0 && T.v200 < 0 ? 'a downtrend' : 'a mixed trend';
+const tk = t => `<a class="in-tk" href="#/stock/${esc(t)}">${esc(t)}</a>`;
+const daysAgo = (d, n) => d && (new Date(ASOF + 'T12:00:00Z') - new Date(d + 'T12:00:00Z')) / 864e5 <= n;
+const daysTo = d => d && /^\d{4}-\d\d-\d\d/.test(d) ? Math.round((new Date(d + 'T12:00:00Z') - new Date(ASOF + 'T12:00:00Z')) / 864e5) : null;
+const words = h => String(h).replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+const actW = a => ({ upgraded: 'upgraded', downgraded: 'downgraded', initiated: 'started coverage on', reiterated: 'reiterated', assigned: 'assigned a rating on', maintained: 'maintained' }[(a || '').toLowerCase()] || (a || 'rated'));
+
+/* ---------- article generators ---------- */
+function snapshot(s) {
+  const T = s.tech || {}, R = s.ret || {}, E = s.earn || {}, A = AN[s.t], up = A && A[0] && fval(s, 'Market Cap') !== undefined ? null : null;
+  const fpe = fval(s, 'Forward P/E'), ps = fval(s, 'P/S'), peg = fval(s, 'PEG Ratio'), upPct = fval(s, 'Analyst Price Target %'), nd = daysTo(E.next);
+  const I = (X[s.t] || {}).i, SI = (NX.SI || {})[s.t], CG = (NX.CG || {})[s.t];
+  const verdict = s.ws >= 8 ? 'scores near the top of everything we cover' : s.ws >= 6 ? 'scores above average' : s.ws >= 4 ? 'lands in the middle of the pack' : 'scores in the bottom tier';
+  let b = `<p>${esc(s.n)} (${esc(s.t)}) ${verdict}, with a Tickerwise Score of <b>${s.ws}/10</b>. It is part of our ${esc(s.th)} theme in the ${esc(s.sec)} sector. The shares are ${pc0(R.r1m)} over the past month, ${pc0(R.r3m)} over three months and ${pc0(R.r1y)} over a year, and sit ${pc0(T.off)} from their 52-week high.</p>`;
+  b += `<h3>The trend</h3><p>The stock is in ${trendOf(T)}: ${nz(T.v50) ? sg(T.v50, 0) + ' versus its 50-day average' : ''}${nz(T.v200) ? ' and ' + sg(T.v200, 0) + ' versus its 200-day average' : ''}. The 14-day RSI reads ${nz(T.rsi) ? T.rsi : '—'}${nz(T.rsi) ? (T.rsi >= 70 ? ', in overbought territory' : T.rsi <= 30 ? ', in oversold territory' : ', in neutral territory') : ''}.</p>`;
+  if (nz(fpe) || nz(ps)) b += `<h3>Valuation</h3><p>${esc(s.t)} trades at ${fx(fpe)} forward earnings and ${fx(ps)} trailing sales${nz(peg) ? `, with a PEG ratio of ${(+peg).toFixed(1)}` : ''}. ${nz(peg) ? (+peg < 1 ? 'A PEG under 1 suggests the price has not caught up with expected growth.' : +peg > 2 ? 'A PEG above 2 means investors are paying up for that growth.' : 'That is a fair price for its expected growth by the usual yardstick.') : ''}</p>`;
+  if (A) b += `<h3>What analysts think</h3><p>${A[9] || A[3] || 'The'} analysts covering ${esc(s.t)} rate it <b>${esc(A[7] || '—')}</b>, with an average price target of ${usd(A[0])} (range ${usd(A[2])} to ${usd(A[1])})${nz(upPct) ? `, implying ${sg(+upPct, 0)} from the last close` : ''}.${(A[10] || []).length ? ' The most recent call: ' + esc(A[10][0][0]) + ' ' + actW(A[10][0][3]) + ' a ' + esc(A[10][0][2] || '') + ' rating' + (nz(A[10][0][4]) ? ' with a ' + usd(A[10][0][4]) + ' target' : '') + ' on ' + dfmt(A[10][0][5]) + '.' : ''}</p>`;
+  b += `<h3>Earnings</h3><p>${E.next ? `${esc(s.t)} next reports on ${dfmt(E.next)}${nz(nd) && nd >= 0 ? ` (${nd} days away)` : ''}. ` : ''}${nz(E.l8) ? `It beat EPS estimates in ${E.l8}% of its last eight reports.` : ''}</p>`;
+  const flows = []; if (I && (I[1] || I[2])) flows.push(`Insiders made ${I[1]} informative buy${I[1] === 1 ? '' : 's'} and ${I[2]} informative sale${I[2] === 1 ? '' : 's'} recently`);
+  if (SI && SI[0]) flows.push(`${SI[0]} superinvestor${SI[0] === 1 ? '' : 's'} hold it in their latest 13F filings`); if (CG && (CG[0] || CG[1])) flows.push(`members of Congress disclosed ${CG[0]} purchase${CG[0] === 1 ? '' : 's'} and ${CG[1]} sale${CG[1] === 1 ? '' : 's'} over the past year`);
+  if (flows.length) b += `<h3>Who is buying and selling</h3><p>${flows.join('; ')}.</p>`;
+  b += `<p>See every number behind this article on the <a href="#/stock/${esc(s.t)}">${esc(s.t)} page</a>.</p>`;
+  return { id: 'snap-' + s.t, kind: 'Stock Snapshot', au: 'desk', date: ASOF, t: [s.t], prem: !(s.ws >= 8), title: `${s.t}: ${s.n.replace(/,? Inc\.?$|,? Corp(oration)?\.?$/, '')} ${s.ws >= 8 ? 'stands out' : s.ws >= 6 ? 'holds up' : s.ws >= 4 ? 'is stuck in the middle' : 'lags'} with a ${s.ws}/10 score`, dek: `${trendOf(T).replace(/^an? /, '').replace(/^./, c => c.toUpperCase())}, ${fx(fpe)} forward earnings${A ? ', analysts rate it ' + (A[7] || '—') : ''}. Here is the full picture.`, body: b };
+}
+function analystWatch() {
+  const ev = []; Object.entries(AN).forEach(([t, A]) => (A[10] || []).forEach(r => { if (daysAgo(r[5], 7)) ev.push({ t, f: r[0], who: r[1], rt: r[2], act: (r[3] || '').toLowerCase(), tg: r[4], d: r[5] }); }));
+  if (!ev.length) return null; const ups = ev.filter(e => e.act === 'upgraded'), dns = ev.filter(e => e.act === 'downgraded'), ini = ev.filter(e => e.act === 'initiated');
+  const row = e => `<li>${tk(e.t)} <b>${esc(e.f)}</b> ${actW(e.act)} ${esc(e.t)}${e.rt ? ' at ' + esc(e.rt) : ''}${nz(e.tg) ? ', target ' + usd(e.tg) : ''} <span class="muted">(${dfmt(e.d)})</span></li>`;
+  const by = {}; ev.forEach(e => { by[e.t] = (by[e.t] || 0) + 1; }); const busiest = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  let b = `<p>Wall Street analysts published <b>${ev.length}</b> rating actions on the stocks we cover in the past week: ${ups.length} upgrade${ups.length === 1 ? '' : 's'}, ${dns.length} downgrade${dns.length === 1 ? '' : 's'} and ${ini.length} new coverage initiation${ini.length === 1 ? '' : 's'}.</p>`;
+  if (busiest.length) b += `<p>The most-discussed names were ${busiest.map(x => tk(x[0]) + ' (' + x[1] + ')').join(', ')}.</p>`;
+  if (ups.length) b += `<h3>Upgrades</h3><ul>${ups.slice(0, 15).map(row).join('')}</ul>`; if (dns.length) b += `<h3>Downgrades</h3><ul>${dns.slice(0, 15).map(row).join('')}</ul>`; if (ini.length) b += `<h3>New coverage</h3><ul>${ini.slice(0, 15).map(row).join('')}</ul>`;
+  return { id: 'analyst-watch-' + ASOF, kind: 'Analyst Watch', au: 'ana', date: ASOF, t: busiest.map(x => x[0]), prem: false, ec: true, title: `Analyst Watch: ${ups.length} upgrades, ${dns.length} downgrades this week`, dek: `Every rating change on the stocks we cover, and which names Wall Street is talking about most.`, body: b };
+}
+function insiderMoves() {
+  const ev = []; Object.entries(X).forEach(([t, x]) => ((x.i || [])[5] || []).forEach(r => { if ((r[2] === 'B' || r[2] === 'S') && daysAgo(r[4], 30)) ev.push({ t, nm: r[0], role: r[1], side: r[2], v: r[3], d: r[4] }); }));
+  if (!ev.length) return null; const B = ev.filter(e => e.side === 'B').sort((a, b) => b.v - a.v), Sx = ev.filter(e => e.side === 'S').sort((a, b) => b.v - a.v), m = v => '$' + (v >= 1 ? v.toFixed(1) + 'M' : Math.round(v * 1000) + 'K');
+  const row = e => `<li>${tk(e.t)} ${esc(e.role || 'Insider')} <b>${esc(e.nm)}</b> ${e.side === 'B' ? 'bought' : 'sold'} <b>${m(e.v)}</b> <span class="muted">(${dfmt(e.d)})</span></li>`;
+  let b = `<p>Over the past 30 days, insiders made <b>${B.length}</b> informative open-market purchases worth ${m(B.reduce((a, e) => a + e.v, 0))} and <b>${Sx.length}</b> informative sales worth ${m(Sx.reduce((a, e) => a + e.v, 0))} across the stocks we cover. We count only trades that say something about how insiders see the stock: scheduled plan sales, tax sales and option exercises are left out.</p>`;
+  if (B.length) b += `<h3>Biggest insider buys</h3><ul>${B.slice(0, 12).map(row).join('')}</ul><p>Insider buying is usually the stronger signal: executives sell for many reasons, but they buy for one.</p>`;
+  if (Sx.length) b += `<h3>Biggest insider sales</h3><ul>${Sx.slice(0, 12).map(row).join('')}</ul>`;
+  return { id: 'insiders-' + ASOF, kind: 'Money Flow', au: 'flow', date: ASOF, t: B.slice(0, 4).concat(Sx.slice(0, 2)).map(e => e.t), prem: false, title: `Insider Moves: ${B.length} buys and ${Sx.length} sales in the past month`, dek: 'The informative insider trades that matter, ranked by size.', body: b };
+}
+function congressRoundup() {
+  const ev = []; Object.entries(NX.CG || {}).forEach(([t, v]) => (v[2] || []).forEach(r => { if (daysAgo(r[5], 60)) ev.push({ t, side: r[0], amt: r[1], who: r[2], ch: r[3], p: r[4], d: r[5] }); }));
+  if (!ev.length) return null; ev.sort((a, b) => a.d < b.d ? 1 : -1); const by = {}; ev.forEach(e => { by[e.t] = by[e.t] || [0, 0]; by[e.t][e.side === 'P' ? 0 : 1]++; });
+  const top = Object.entries(by).sort((a, b) => (b[1][0] + b[1][1]) - (a[1][0] + a[1][1])).slice(0, 8);
+  let b = `<p>Members of Congress disclosed <b>${ev.length}</b> trades in the stocks we cover over the past 60 days. Lawmakers must report trades within 45 days, and only as dollar ranges, so these are signals of interest rather than a real-time feed.</p><h3>Most-traded names</h3><ul>${top.map(([t, c]) => `<li>${tk(t)} ${c[0]} purchase${c[0] === 1 ? '' : 's'}, ${c[1]} sale${c[1] === 1 ? '' : 's'}</li>`).join('')}</ul><h3>Latest disclosures</h3><ul>${ev.slice(0, 15).map(e => `<li>${tk(e.t)} <b>${esc(e.who)}</b> (${e.ch === 'S' ? 'Senate' : 'House'}${e.p ? ', ' + esc(e.p) : ''}) ${e.side === 'P' ? 'bought' : e.side === 'S' ? 'sold' : 'exchanged'} $${esc(String(e.amt).replace(/\s*-\s*/, ' – $'))} <span class="muted">(${dfmt(e.d)})</span></li>`).join('')}</ul><p>Follow any lawmaker on the <a href="#/social">Social</a> page to see their trades as they are disclosed.</p>`;
+  return { id: 'congress-' + ASOF, kind: 'Money Flow', au: 'flow', date: ASOF, t: top.slice(0, 5).map(x => x[0]), prem: true, title: `Congress Trades: ${top.length ? top[0][0] + ' leads' : 'the latest'} as lawmakers disclose ${ev.length} trades`, dek: 'Which stocks members of Congress bought and sold over the past two months.', body: b };
+}
+function superMoves() {
+  const ev = []; Object.entries(NX.SI || {}).forEach(([t, v]) => (v[3] || []).forEach(r => { if (r[2]) ev.push({ t, who: r[0], pct: r[1], act: r[2] }); }));
+  if (!ev.length) return null; const nb = ev.filter(e => /^Buy/i.test(e.act)), add = ev.filter(e => /^Add/i.test(e.act)), red = ev.filter(e => /^Reduce/i.test(e.act));
+  const own = Object.entries(NX.SI || {}).map(([t, v]) => [t, v[0]]).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  let b = `<p>In their latest quarterly 13F filings, the well-known fund managers tracked by Dataroma opened <b>${nb.length}</b> new positions, added to <b>${add.length}</b> and trimmed <b>${red.length}</b> among the stocks we cover.</p><h3>Most widely held</h3><ul>${own.map(([t, n]) => `<li>${tk(t)} held by ${n} superinvestors</li>`).join('')}</ul>${nb.length ? `<h3>New positions</h3><ul>${nb.sort((a, b) => b.pct - a.pct).slice(0, 12).map(e => `<li>${tk(e.t)} <b>${esc(e.who)}</b> started a position (${e.pct >= 0.1 ? e.pct.toFixed(1) + '% of the fund' : 'a small stake'})</li>`).join('')}</ul>` : ''}<p>13F filings are made up to 45 days after each quarter ends, so these moves can be months old.</p>`;
+  return { id: 'supers-' + ((NX.d || {}).SI || ASOF), kind: 'Money Flow', au: 'flow', date: (NX.d || {}).SI || ASOF, t: own.slice(0, 5).map(x => x[0]), prem: true, title: `Superinvestor Moves: ${nb.length} new positions in the latest 13F filings`, dek: 'What the famous fund managers bought, added and trimmed last quarter.', body: b };
+}
+function earningsAhead() {
+  const L = S.map(s => ({ s, d: daysTo(s.earn && s.earn.next) })).filter(x => nz(x.d) && x.d >= 0 && x.d <= 14).sort((a, b) => a.d - b.d); if (!L.length) return null;
+  const b = `<p><b>${L.length}</b> of the stocks we cover report earnings in the next two weeks. Here is the schedule, with each company's record of beating estimates.</p><div class="tbl-wrap" style="max-height:none"><table class="tw"><thead><tr><th>Date</th><th>Stock</th><th class="num">Score</th><th class="num">EPS beat rate (last 8)</th><th class="num">3-month move</th></tr></thead><tbody>${L.map(x => `<tr><td>${dfmt(x.s.earn.next)}</td><td>${tk(x.s.t)} ${esc(x.s.n)}</td><td class="num">${x.s.ws}/10</td><td class="num">${nz(x.s.earn.l8) ? x.s.earn.l8 + '%' : '—'}</td><td class="num"><b class="${cls(x.s.ret.r3m)}">${pc0(x.s.ret.r3m)}</b></td></tr>`).join('')}</tbody></table></div><p>See the full setup for each report on the <a href="#/screener/earnings">Earnings Setups</a> screener.</p>`;
+  return { id: 'earnings-' + ASOF, kind: 'Earnings', au: 'mkt', date: ASOF, t: L.slice(0, 6).map(x => x.s.t), prem: false, ec: true, title: `Earnings Ahead: ${L.length} reports in the next two weeks`, dek: L.slice(0, 4).map(x => x.s.t).join(', ') + ' and more report soon. Who usually beats?', body: b };
+}
+function topRated() {
+  const L = S.filter(s => nz(s.ws)).sort((a, b) => b.ws - a.ws || (b.ret.r3m || 0) - (a.ret.r3m || 0)).slice(0, 15);
+  const b = `<p>These are the highest-scoring stocks in our universe right now. The Tickerwise Score combines growth, profitability, valuation, analyst views and momentum into one number from 1 to 10.</p><div class="tbl-wrap" style="max-height:none"><table class="tw"><thead><tr><th>Stock</th><th>Theme</th><th class="num">Score</th><th class="num">1 month</th><th class="num">1 year</th></tr></thead><tbody>${L.map(s => `<tr><td>${tk(s.t)} ${esc(s.n)}</td><td class="muted">${esc(s.th)}</td><td class="num"><b>${s.ws}/10</b></td><td class="num"><b class="${cls(s.ret.r1m)}">${pc0(s.ret.r1m)}</b></td><td class="num"><b class="${cls(s.ret.r1y)}">${pc0(s.ret.r1y)}</b></td></tr>`).join('')}</tbody></table></div><p><a href="#/method">How we score →</a></p>`;
+  return { id: 'top-rated-' + ASOF, kind: 'Ideas', au: 'desk', date: ASOF, t: L.slice(0, 6).map(s => s.t), prem: false, title: `The ${L.length} highest-rated stocks on Tickerwise this week`, dek: `${L[0].t}, ${L[1].t} and ${L[2].t} lead our scores. The full list, with how each has traded.`, body: b };
+}
+function movers() {
+  const L = S.filter(s => nz(s.ret.r1m)).sort((a, b) => b.ret.r1m - a.ret.r1m), up = L.slice(0, 8), dn = L.slice(-8).reverse();
+  const row = s => `<li>${tk(s.t)} ${esc(s.n)} <b class="${cls(s.ret.r1m)}">${pc0(s.ret.r1m)}</b> <span class="muted">(score ${s.ws}/10, ${esc(s.th)})</span></li>`;
+  const b = `<p>Here are the biggest winners and losers among the stocks we cover over the past month, and how each scores today.</p><h3>Biggest gainers</h3><ul>${up.map(row).join('')}</ul><h3>Biggest decliners</h3><ul>${dn.map(row).join('')}</ul><p>See them all at a glance on the <a href="#/markets/heatmap">Market Heatmap</a>.</p>`;
+  return { id: 'movers-' + ASOF, kind: 'Markets', au: 'mkt', date: ASOF, t: up.slice(0, 3).concat(dn.slice(0, 3)).map(s => s.t), prem: false, title: `Monthly Movers: ${up[0].t} ${pc0(up[0].ret.r1m)}, ${dn[0].t} ${pc0(dn[0].ret.r1m)}`, dek: 'The month\'s biggest winners and losers among the stocks we cover.', body: b };
+}
+function themeReport(th) {
+  const L = S.filter(s => s.th === th); if (L.length < 3) return null; const avg = k => L.filter(s => nz(s.ret[k])).reduce((a, s, i, A) => a + s.ret[k] / A.length, 0), sc = L.reduce((a, s) => a + s.ws, 0) / L.length, by = L.slice().sort((a, b) => b.ws - a.ws);
+  const b = `<p>Our ${esc(th)} theme holds <b>${L.length}</b> stocks with an average Tickerwise Score of <b>${sc.toFixed(1)}/10</b>. As a group they are ${pc0(avg('r1m'))} over the past month and ${pc0(avg('r1y'))} over a year.</p><h3>Leaders and laggards</h3><div class="tbl-wrap" style="max-height:none"><table class="tw"><thead><tr><th>Stock</th><th class="num">Score</th><th class="num">1 month</th><th class="num">3 months</th><th class="num">1 year</th><th class="num">Off high</th></tr></thead><tbody>${by.map(s => `<tr><td>${tk(s.t)} ${esc(s.n)}</td><td class="num"><b>${s.ws}/10</b></td><td class="num"><b class="${cls(s.ret.r1m)}">${pc0(s.ret.r1m)}</b></td><td class="num"><b class="${cls(s.ret.r3m)}">${pc0(s.ret.r3m)}</b></td><td class="num"><b class="${cls(s.ret.r1y)}">${pc0(s.ret.r1y)}</b></td><td class="num">${pc0(s.tech.off)}</td></tr>`).join('')}</tbody></table></div><p>${tk(by[0].t)} has the best score in the group; ${tk(by[by.length - 1].t)} the weakest. <a href="#/theme/${encodeURIComponent(th)}">Open the ${esc(th)} theme →</a></p>`;
+  return { id: 'theme-' + th.toLowerCase().replace(/[^a-z0-9]+/g, '-'), kind: 'Theme Report', au: 'mkt', date: ASOF, t: by.slice(0, 5).map(s => s.t), prem: true, title: `${th}: ${by[0].t} leads a group that is ${pc0(avg('r1m'))} this month`, dek: `Scores, returns and leaders across the ${L.length} ${th} stocks we cover.`, body: b };
+}
+let ALL = null;
+function library() { if (ALL) return ALL; const out = [analystWatch(), earningsAhead(), insiderMoves(), topRated(), movers(), congressRoundup(), superMoves()].filter(Boolean);
+  [...new Set(S.map(s => s.th))].forEach(th => { const a = themeReport(th); if (a) out.push(a); }); S.filter(s => s.sec !== 'ETF' && fval(s, 'Market Cap')).forEach(s => out.push(snapshot(s)));
+  out.forEach(a => { a.min = Math.max(1, Math.round(words(a.body) / 230)); }); return (ALL = out); }
+
+/* ---------- follows ---------- */
+const FK = 'tw_ins_follow', rdF = () => { try { return JSON.parse(localStorage.getItem(FK) || '{"a":{},"t":{}}'); } catch (e) { return { a: {}, t: {} }; } }, wrF = o => { try { localStorage.setItem(FK, JSON.stringify(o)); } catch (e) {} };
+const fbtn = (type, id, label) => { const on = !!rdF()[type][id]; return `<button type="button" class="in-btn ${on ? 'on' : ''}" data-ft="${type}" data-fi="${esc(id)}">${on ? '✓ Following' : '＋ Follow' + (label ? ' ' + esc(label) : '')}</button>`; };
+function wire() { $$('[data-ft]').forEach(b => b.onclick = () => { const o = rdF(), ty = b.dataset.ft, id = b.dataset.fi; if (o[ty][id]) delete o[ty][id]; else o[ty][id] = 1; wrF(o); const on = !!o[ty][id]; b.classList.toggle('on', on); b.textContent = on ? '✓ Following' : '＋ Follow'; }); }
+
+/* ---------- pages ---------- */
+const head = (t, sub, on) => `<section class="page-h"><div class="wrap"><h1>${t}</h1><p>${sub}</p><nav class="in-sub">${[['', 'Latest'], ['my', 'My Feed'], ['authors', 'Authors'], ['write', 'Write for Tickerwise'], ['partners', 'Partner Library']].map(x => `<a href="#/insights${x[0] ? '/' + x[0] : ''}" class="${on === x[0] ? 'on' : ''}">${x[1]}</a>`).join('')}</nav></div></section>`;
+const wrap = h => `<section class="sec" style="padding-top:22px"><div class="wrap" style="display:flex;flex-direction:column;gap:18px">${h}</div></section>`;
+const card = (t, s, inner) => `<div class="card"><div class="card-h"><h3>${t}</h3>${s ? `<span>${s}</span>` : ''}</div>${inner}</div>`;
+const badge = a => `${a.prem ? '<span class="in-b pr">🔒 Premium</span>' : '<span class="in-b fr">Free</span>'}${a.ec ? '<span class="in-b ec">Editor\'s Pick</span>' : ''}<span class="in-b k">${esc(a.kind)}</span>`;
+const item = a => `<a class="in-a" href="#/insights/a/${encodeURIComponent(a.id)}"><div style="flex:1;min-width:0"><div class="in-m">${badge(a)}</div><h4>${esc(a.title)}</h4><p>${esc(a.dek)}</p><div class="in-m" style="margin-top:6px"><span>${esc(AU[a.au][0])}</span><span>·</span><span>${dfmt(a.date)}</span><span>·</span><span>${a.min} min read</span>${a.t.slice(0, 4).map(t => `<span class="in-tk">${esc(t)}</span>`).join('')}</div></div></a>`;
+const preview = '<p class="muted" style="font-size:12.5px;margin:0">Premium articles are free to read during the preview and will become part of Tickerwise Pro. Follows are saved in this browser; email alerts switch on when accounts launch.</p>';
+let IQ = '', IK = 'All', IP = 'all', N = 30;
+function latest() {
+  const L = library(), kinds = ['All', ...new Set(L.map(a => a.kind))], f = L.filter(a => (IK === 'All' || a.kind === IK) && (IP === 'all' || (IP === 'free' ? !a.prem : a.prem)) && (!IQ || (a.title + ' ' + a.t.join(' ')).toLowerCase().includes(IQ.toLowerCase())));
+  const feat = L.find(a => a.ec) || L[0], picks = L.filter(a => a.ec || a.kind === 'Money Flow').slice(0, 4);
+  app.innerHTML = head('Insights', 'Analysis and stories on the stocks we cover, written from every data point on Tickerwise and refreshed every night.', '') + wrap(`
+    <div class="in-hero"><a class="in-feat" href="#/insights/a/${encodeURIComponent(feat.id)}"><div class="in-m" style="color:#C4D3F5">${badge(feat)}</div><h2>${esc(feat.title)}</h2><p>${esc(feat.dek)}</p><p style="margin-top:12px;font-size:13px">${esc(AU[feat.au][0])} · ${feat.min} min read</p></a>
+      ${card('Editor\'s Picks', '', `<div class="in-l">${picks.map(a => `<a class="in-a" href="#/insights/a/${encodeURIComponent(a.id)}" style="padding:10px 0"><div><div class="in-m">${badge(a)}</div><h4 style="font-size:15px">${esc(a.title)}</h4></div></a>`).join('')}</div>`)}</div>
+    ${card('All Articles', L.length + ' articles · ' + L.filter(a => !a.prem).length + ' free', `<div class="in-filter"><input id="in-q" placeholder="Search by ticker or headline" value="${esc(IQ)}"><div class="seg">${[['all', 'All'], ['free', 'Free'], ['prem', 'Premium']].map(x => `<button type="button" class="${IP === x[0] ? 'on' : ''}" data-p="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+      <div class="in-filter">${kinds.map(k => `<button type="button" class="btn ${k === IK ? 'primary' : 'ghost'}" data-k="${esc(k)}" style="padding:5px 11px;font-size:13px">${esc(k)}</button>`).join('')}</div>
+      <div class="in-l">${f.slice(0, N).map(item).join('') || '<p class="muted">No articles match.</p>'}</div>${f.length > N ? '<button type="button" class="btn ghost" id="in-more" style="margin-top:12px">Show more</button>' : ''}`)}${preview}`);
+  $('#in-q').oninput = e => { IQ = e.target.value; clearTimeout(window.__inq); window.__inq = setTimeout(() => { const p = e.target.selectionStart; latest(); const i = $('#in-q'); i.focus(); i.setSelectionRange(p, p); }, 250); };
+  $$('[data-k]').forEach(b => b.onclick = () => { IK = b.dataset.k; N = 30; latest(); }); $$('[data-p]').forEach(b => b.onclick = () => { IP = b.dataset.p; N = 30; latest(); }); const m = $('#in-more'); if (m) m.onclick = () => { N += 30; latest(); };
+}
+function article(id) {
+  const L = library(), a = L.find(x => x.id === id); if (!a) { app.innerHTML = head('Insights', 'Article not found.', '') + wrap('<a class="btn ghost" href="#/insights">← All articles</a>'); return; }
+  const rel = L.filter(x => x !== a && x.t.some(t => a.t.includes(t))).slice(0, 4);
+  app.innerHTML = `<section class="sec" style="padding-top:26px"><div class="wrap"><div class="in-art"><a href="#/insights" style="font-size:14px">← Insights</a><div class="in-m" style="margin-top:10px">${badge(a)}</div><h1>${esc(a.title)}</h1><p class="dek">${esc(a.dek)}</p>
+    <div class="in-auth">${avA(a.au)}<div style="flex:1"><b>${esc(AU[a.au][0])}</b><div class="in-m">${dfmt(a.date)} · ${a.min} min read</div></div>${fbtn('a', a.au)}</div>
+    ${a.prem ? '<div class="in-lock"><div class="in-pv">🔒 <b>Premium article</b>, free to read during the preview. It will be part of Tickerwise Pro.</div></div>' : ''}
+    <div class="in-body">${a.body}</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><span class="muted" style="font-size:13px">Follow the stocks in this article:</span>${a.t.slice(0, 6).map(t => fbtn('t', t, t)).join('')}</div>${disclose}
+    ${rel.length ? `<h3 style="font:700 20px 'Space Grotesk';margin:28px 0 6px">Related</h3><div class="in-l">${rel.map(item).join('')}</div>` : ''}</div></div></section>`;
+  wire(); document.title = a.title + ' — Tickerwise Insights';
+}
+function myFeed() {
+  const o = rdF(), L = library(), au = Object.keys(o.a), tks = Object.keys(o.t), f = L.filter(a => au.includes(a.au) || a.t.some(t => o.t[t]));
+  app.innerHTML = head('My Feed', 'Articles from the authors and stocks you follow.', 'my') + wrap(`${card('Following', '', `<p style="margin:0 0 8px">${au.length || tks.length ? [...au.map(k => '<b>' + esc(AU[k][0]) + '</b>'), ...tks.map(tk)].join(' ') : 'You are not following any authors or stocks yet. Use the Follow buttons on any article, or follow a desk on the <a href="#/insights/authors">Authors</a> page.'}</p>
+    <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:10px 14px;font-size:13.5px">🔔 <b>Alerts:</b> when accounts launch, you'll get an email the moment a followed author publishes or a new article mentions a stock you follow. Choose instant, daily or weekly.</div>`)}
+    ${card('Your Articles', f.length + ' articles', `<div class="in-l">${f.slice(0, 60).map(item).join('') || '<p class="muted">Nothing yet.</p>'}</div>`)}${preview}`);
+}
+function authors() {
+  const L = library(); app.innerHTML = head('Authors', 'The Tickerwise desks, and soon outside contributors.', 'authors') + wrap(`${card('Tickerwise Desks', 'data-driven, refreshed nightly', `<div class="in-g">${Object.entries(AU).map(([k, v]) => `<div class="in-c"><div style="display:flex;gap:12px;align-items:center">${avA(k)}<div><b>${esc(v[0])}</b><div class="in-m">${L.filter(a => a.au === k).length} articles</div></div></div><p style="font-size:13.5px;color:#475569">${esc(v[1])}</p>${fbtn('a', k)}</div>`).join('')}</div>`)}
+    ${card('Contributors', '', '<p style="margin:0">Independent analysts, investors and newsletter writers will publish here through the Contributor Program. <a href="#/insights/write">Apply to write for Tickerwise →</a></p>')}${preview}`); wire();
+}
+function write() {
+  app.innerHTML = head('Write for Tickerwise', 'Publish your analysis to an audience of active investors, and earn from every read.', 'write') + wrap(`
+    ${card('The Contributor Program', '', `<div class="in-steps"><div><b>Publish</b><p>Write about any stock, theme or market. Our editors review every piece before it goes live.</p></div><div><b>Get read</b><p>Articles appear on the stock pages they mention, in readers' feeds and in alert emails to everyone following those stocks.</p></div><div><b>Earn</b><p>Contributors share in the subscription revenue their Premium articles bring in, based on paid reads. First-on-Tickerwise exclusives earn a higher rate.</p></div><div><b>Grow</b><p>Readers follow you and get an alert each time you publish. Build your audience and link to your own newsletter or fund.</p></div></div><p class="muted" style="font-size:12.5px;margin:10px 0 0">Program terms will be published at launch.</p>`)}
+    ${card('Apply', '', `<div class="in-f"><label>Full name<input id="c1" maxlength="60"></label><label>Email<input id="c2" type="email" maxlength="80"></label><label>Topics you cover<input id="c3" maxlength="120" placeholder="e.g. semiconductors, dividend stocks, macro"></label><label>Links (optional)<input id="c4" maxlength="200" placeholder="Past articles, newsletter, X"></label>
+      <label class="wide">Pitch: your first article idea, in a few sentences<textarea id="c5" rows="4" maxlength="1200"></textarea></label><div><button class="btn primary" id="csend">Send Application</button></div></div><p class="muted" id="cmsg" style="margin:8px 0 0"></p>`)}`);
+  $('#csend').onclick = async () => { const v = i => ($('#c' + i).value || '').trim(), m = $('#cmsg'); if (!v(1) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v(2)) || !v(5)) { m.style.color = '#D72B45'; m.textContent = 'Please add your name, a valid email and a pitch.'; return; }
+    m.style.color = ''; m.textContent = 'Sending…'; try { const a = await window.TWPP.token(); const r = await fetch(API + '/wix-data/v2/items', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: a }, body: JSON.stringify({ dataCollectionId: 'ContributorApplications', dataItem: { data: { name: v(1), email: v(2), topics: v(3), links: v(4), sample: v(5) } } }) }); if (!r.ok) throw 0; m.style.color = '#00995A'; m.textContent = 'Thanks! Our editors will be in touch.'; $('#csend').disabled = true; } catch (e) { m.style.color = '#D72B45'; m.textContent = 'Could not send right now. Please try again.'; } };
+}
+function partners() {
+  app.innerHTML = head('Partner Library', 'Bringing an established library of market commentary into Tickerwise.', 'partners') + wrap(card('TalkMarkets', 'planned partnership · not live yet', `<p style="margin:0 0 10px;line-height:1.6"><b>TalkMarkets</b> publishes market commentary, videos and podcasts from a network of contributors covering stocks, crypto, commodities and the economy. Contributors there earn equity in the company for their articles, exclusives and the readers they bring in, and readers can follow stocks and get instant alerts when a new post mentions them.</p>
+    <p style="margin:0 0 10px;line-height:1.6">The plan: TalkMarkets articles appear here alongside the Tickerwise desks, on each stock's page and in readers' feeds, with authors' credit and links back. Its contributors would join our Contributor Program.</p><p class="muted" style="margin:0;font-size:13px">Nothing from TalkMarkets is shown on Tickerwise until a partnership agreement is in place.</p>`));
+}
+/* stock pages: latest articles mentioning the stock */
+function stockBox(t) { const m = $('.main'); if (!m || $('#in-stock')) return; const L = library().filter(a => a.t.includes(t)).slice(0, 4); if (!L.length) return;
+  m.insertAdjacentHTML('beforeend', `<div class="card" id="in-stock"><div class="card-h"><h3>Insights on ${esc(t)}</h3><span><a href="#/insights">All articles →</a></span></div><div class="in-l">${L.map(item).join('')}</div></div>`); }
+
+/* ---------- router ---------- */
+function navLink() { const n = $('#navlinks'); if (n && !$('a[data-r="insights"]', n)) { const pl = $('a[data-r="paper"]', n) || $('a[data-r="plans"]', n), a = '<a href="#/insights" data-r="insights">Insights</a>'; if (pl) pl.insertAdjacentHTML('beforebegin', a); else n.insertAdjacentHTML('beforeend', a); } }
+function route() {
+  const h = location.hash.replace(/^#\/?/, '').split('#')[0], p = h.split('/'); navLink(); $$('#navlinks a').forEach(a => { if (a.dataset.r === 'insights') a.classList.toggle('on', p[0] === 'insights'); });
+  if (p[0] === 'stock' && (!p[2] || p[2] === 'overview')) { try { stockBox(decodeURIComponent(p[1] || '').toUpperCase()); } catch (e) {} return; }
+  if (p[0] !== 'insights') return; $$('#navlinks a').forEach(a => { if (a.dataset.r !== 'insights') a.classList.remove('on'); });
+  try { if (p[1] === 'a' && p[2]) article(decodeURIComponent(p[2])); else if (p[1] === 'my') myFeed(); else if (p[1] === 'authors') authors(); else if (p[1] === 'write') write(); else if (p[1] === 'partners') partners(); else latest(); } catch (e) { if (window.console) console.error(e); }
+  if (p[1] !== 'a') document.title = 'Insights — Tickerwise'; window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route); route();
+})();
