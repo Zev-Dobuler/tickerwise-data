@@ -90,6 +90,14 @@ if os.path.exists(_qp):
 _bp = _D + 'bullbear.json' if os.path.exists(_D + 'bullbear.json') else os.path.join(_R, 'bb.json')
 if os.path.exists(_bp):
     _b = json.load(open(_bp)); pub['BB'] = {k: v for k, v in _b.get('T', {}).items() if k in _names}; pub['BBd'] = _b.get('read')
+# Zacks Style Scores + Industry Rank (kit/zs.js), same fields for every stock
+_zp = _D + 'zstyle.json' if os.path.exists(_D + 'zstyle.json') else os.path.join(_R, 'zs.json')
+if os.path.exists(_zp):
+    _z = json.load(open(_zp)); pub['ZS'] = {k.replace('.', '-'): v for k, v in _z.get('T', {}).items() if k.replace('.', '-') in _names}; pub['ZSd'] = _z.get('read')
+# What's Happening: 30-day event log + summary written nightly for every stock (kit/wh.py)
+_wp = _D + 'whatsup.json' if os.path.exists(_D + 'whatsup.json') else os.path.join(_R, 'wh.json')
+if os.path.exists(_wp):
+    _w = json.load(open(_wp)); pub['WH'] = {k: v for k, v in _w.get('T', {}).items() if k in _names}; pub['WHd'] = _w.get('read')
 # price history for every stock in one identical format (kit/bp.py)
 if os.path.exists('/home/claude/tw2/data/twpx.json'):
     _px = json.load(open('/home/claude/tw2/data/twpx.json')); _px['T'] = {k: v for k, v in _px['T'].items() if k in {r[0] for r in rows}}; pub['PX'] = _px
