@@ -10,7 +10,7 @@ python3 bundles.py | tail -1
 python3 seal.py /home/claude/tw2/prev /home/claude/tw2/prev/sealed "$R/owner_pub.json"
 cp /home/claude/tw2/prev/sealed/pub.json.gz /home/claude/tw2/prev/sealed/priv.bin "$R/"
 cd "$R"
-git -c user.email=claude@anthropic.com -c user.name=Claude add pub.json.gz priv.bin px.json
+git -c user.email=claude@anthropic.com -c user.name=Claude add pub.json.gz priv.bin px.json $( [ -f qs.json ] && echo qs.json ) $( [ -f bb.json ] && echo bb.json )
 git -c user.email=claude@anthropic.com -c user.name=Claude commit -qm "Data: $(date -u +%Y-%m-%d)" || { echo "no change"; exit 0; }
 git -c push.negotiate=true push origin HEAD
 echo "pushed $(git rev-parse --short HEAD)"

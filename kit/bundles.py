@@ -61,6 +61,35 @@ dpub['options'] = [r for r in alld['options'] if r.get('k') != 'h' or r.get('t')
 dpriv = alld
 
 pub = {'asof': meta['asof'], 'sectors': meta['sectors'], 'RK': meta['RK'], 'R': rows, 'X': X, 'BENCH': xj['BENCH'], 'MK': MK, 'F': F}
+# Analyst forecast block (same TipRanks fields for every stock): target range, rating counts, latest actions
+_D = '/home/claude/tw2/data/'
+_an = {}
+def _anrow(a):
+    if not a or not a.get('n'): return None
+    tx = [[x.get('firm') or '', x.get('name') or '', x.get('pos') or '', x.get('act') or '', x.get('pt'), x.get('date')] for x in (a.get('tx') or [])[:6]]  # 6 = what every stock has today (wish list keeps 6); raise only when all stocks keep more
+    return [a.get('avg'), a.get('high'), a.get('low'), a.get('n'), a.get('buy'), a.get('hold'), a.get('sell'), a.get('consensus'), a.get('read'), a.get('total12'), tx]
+try:
+    for r in json.load(open(_D + 'tipranks_ta.json')):
+        v = _anrow(r.get('an'))
+        if v: _an[r['ticker']] = v
+except Exception: pass
+try:
+    for r in json.load(open(_D + 'wishx.json')):
+        if r.get('k') == 'ta' and r['ticker'] not in _an:
+            v = _anrow(r.get('an'))
+            if v: _an[r['ticker']] = v
+except Exception: pass
+_names = {r[0] for r in rows}
+pub['AN'] = {k: v for k, v in _an.items() if k in _names}
+# Long-run quality stats (stockanalysis.com statistics + annual financials), same fields for every stock
+_R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_qp = _D + 'qstats.json' if os.path.exists(_D + 'qstats.json') else os.path.join(_R, 'qs.json')
+if os.path.exists(_qp):
+    _q = json.load(open(_qp)); pub['QS'] = {k: v for k, v in _q.get('T', {}).items() if k in _names}; pub['QSd'] = _q.get('read')
+# Bull and bear case written nightly for every stock
+_bp = _D + 'bullbear.json' if os.path.exists(_D + 'bullbear.json') else os.path.join(_R, 'bb.json')
+if os.path.exists(_bp):
+    _b = json.load(open(_bp)); pub['BB'] = {k: v for k, v in _b.get('T', {}).items() if k in _names}; pub['BBd'] = _b.get('read')
 # price history for every stock in one identical format (kit/bp.py)
 if os.path.exists('/home/claude/tw2/data/twpx.json'):
     _px = json.load(open('/home/claude/tw2/data/twpx.json')); _px['T'] = {k: v for k, v in _px['T'].items() if k in {r[0] for r in rows}}; pub['PX'] = _px
