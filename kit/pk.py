@@ -9,7 +9,15 @@ for o in d['stocks']:
     if 'risk' in o:
         r = o['risk']
         r['r'] = [[RK.index(k), v['e'], v['s'], first(v['w'],140) if (v['e'] or 0) >= 6 else ''] for k, v in r['r'].items()]
-    o['fq'] = [[x['p'], 1 if x['k'] == 'E' else 0, x['rev'], x['npm'], x['y']] for x in o['fq'][-9:]]
+    # Reported quarters only, labelled by calendar quarter, so holdings and wish-list stocks look identical
+    # (estimates exist only for some stocks today; they come back for everyone once the wish list has them too).
+    def _ql(p):
+        import datetime as _dt
+        try: m = _dt.datetime.strptime(p, '%b %y'); mm = m.month - 1 or 12; yy = m.year - (1 if m.month == 1 else 0)
+        except Exception: return p
+        return 'Q%d %s' % ((mm - 1) // 3 + 1, str(yy)[2:])
+    _a = [x for x in o['fq'] if x['k'] != 'E']
+    o['fq'] = [[_ql(x['p']), 0, x['rev'], x['npm'], x['y']] for x in _a[-9:]]
     o['earn']['h'] = [[h['q'], h['d'], h['e'], h['ee'], h['eb'], h['rb'], h['rs'], h['mv'], h.get('ra'), h.get('re')] for h in o['earn']['h']]
     if 'gw' in o:
         g = o['gw']; tr = g['tr']; g['tr'] = [tr[0][0], tr[-1][0], [v for _, v in tr]]

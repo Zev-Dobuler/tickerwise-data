@@ -2,13 +2,15 @@
 # Build, encrypt and publish Tickerwise data. Run after prep.py, from anywhere.
 set -euo pipefail
 K="$(cd "$(dirname "$0")" && pwd)"; R="$(dirname "$K")"; B=/home/claude/tw2/build
+cp "$K"/*.py "$B"/
 cd "$B"
+python3 bp.py
 python3 b1.py > /dev/null; python3 pk.py > /dev/null; python3 bx.py > /dev/null; python3 bm.py > /dev/null; python3 report.py > /dev/null
 python3 bundles.py | tail -1
 python3 seal.py /home/claude/tw2/prev /home/claude/tw2/prev/sealed "$R/owner_pub.json"
 cp /home/claude/tw2/prev/sealed/pub.json.gz /home/claude/tw2/prev/sealed/priv.bin "$R/"
 cd "$R"
-git -c user.email=claude@anthropic.com -c user.name=Claude add pub.json.gz priv.bin
+git -c user.email=claude@anthropic.com -c user.name=Claude add pub.json.gz priv.bin px.json
 git -c user.email=claude@anthropic.com -c user.name=Claude commit -qm "Data: $(date -u +%Y-%m-%d)" || { echo "no change"; exit 0; }
 git -c push.negotiate=true push origin HEAD
 echo "pushed $(git rev-parse --short HEAD)"

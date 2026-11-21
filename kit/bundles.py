@@ -1,3 +1,4 @@
+import os
 """Split the skill's published data into a sibling-safe public bundle and a private (portfolio) bundle."""
 import json, glob, os, sys
 B = '/home/claude/tw2/'; D = B + 'data/'; W = B + 'work/'
@@ -60,6 +61,9 @@ dpub['options'] = [r for r in alld['options'] if r.get('k') != 'h' or r.get('t')
 dpriv = alld
 
 pub = {'asof': meta['asof'], 'sectors': meta['sectors'], 'RK': meta['RK'], 'R': rows, 'X': X, 'BENCH': xj['BENCH'], 'MK': MK, 'F': F}
+# price history for every stock in one identical format (kit/bp.py)
+if os.path.exists('/home/claude/tw2/data/twpx.json'):
+    _px = json.load(open('/home/claude/tw2/data/twpx.json')); _px['T'] = {k: v for k, v in _px['T'].items() if k in {r[0] for r in rows}}; pub['PX'] = _px
 priv = {'H': H, 'schwab': schwab, 'run': priv_run, 'X': priv_x, 'D': dpriv, 'page': open(B + 'prev/report_inline.html').read()}
 for n, o in (('pub', pub), ('priv', priv)):
     s = json.dumps(o, separators=(',', ':'), ensure_ascii=False)
