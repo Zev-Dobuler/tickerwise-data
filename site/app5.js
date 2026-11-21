@@ -142,14 +142,14 @@ function mixBlock(title, D) {
   const trend = rows.slice(0, 8).reverse(), tmax = Math.max(...trend.map(r => r.slice(1).filter(x => nz(x) && x > 0).reduce((a, b) => a + b, 0)));
   const tb = `<div class="sg-trend">${trend.map(r => { const t = r.slice(1).reduce((a, b) => a + (nz(b) && b > 0 ? b : 0), 0);
     return `<div class="sg-col"><div class="sg-stack" style="height:${(t / (tmax || 1) * 100).toFixed(1)}%">${vals.map((v, i) => { const x = r[h.indexOf(v[0]) + 1]; return nz(x) && x > 0 ? `<i class="hv" style="height:${(x / t * 100).toFixed(2)}%;background:${SEGC[i % 10]}" data-tip="${esc(r[0] + '|' + v[0] + ': ' + money(x))}"></i>` : ''; }).join('')}</div><small>${esc(r[0].replace(/^(\w{3}) \d+, (\d{4})$/, (m, a, b) => a + ' ' + b.slice(2)))}</small></div>`; }).join('')}</div>`;
-  return `<div class="sg-b"><div class="sg-h"><b>${title}</b><span class="muted">${esc(r0[0])} · total ${money(tot)}</span></div>${bar}
+  return `<div class="sg-b"><div class="sg-h"><b>${title}</b><span class="muted">12 months to ${esc(r0[0])} · total ${money(tot)}</span></div>${bar}
     <table class="tw sg-t"><thead><tr><th>${title.replace('By ', '')}</th><th class="num">Revenue</th><th class="num">Share</th><th class="num">Vs a year earlier</th></tr></thead><tbody>${list}</tbody></table>
-    <div class="sg-tl">Mix over the last ${trend.length} reports</div>${tb}</div>`;
+    <div class="sg-tl">12-month revenue at each of the last ${trend.length} reports (current segments only)</div>${tb}</div>`;
 }
 function segments(s) {
   const D = (NX.SEG || {})[s.t]; if (!D) return '';
   const a = mixBlock('By Segment', D.s), b = mixBlock('By Geography', D.g); if (!a && !b) return '';
-  return card('Where The Revenue Comes From', 'revenue by business segment and by region', `<div class="sg-g">${a}${b}</div>${src('Company-reported segment and regional revenue for each report period, from stockanalysis.com', ND.SEG)}`, 'seg-' + s.t);
+  return card('Where The Revenue Comes From', 'revenue by business segment and by region', `<div class="sg-g">${a}${b}</div>${src('Company-reported segment and regional revenue, trailing 12 months at each report date, from stockanalysis.com. Segments a company has since renamed or dropped are left out', ND.SEG)}`, 'seg-' + s.t);
 }
 
 /* ===== 5. Seasonality (Technicals tab) ===== */
