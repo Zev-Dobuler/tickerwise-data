@@ -120,14 +120,24 @@ for t in tick:
     if hi and lo and px and hi > lo: o['tech']['pos'] = round((px - lo) / (hi - lo) * 100)
     o['ret'] = {k: r1(v) for k, v in ret.items()}; o['ret']['vq'] = r1(rq)
     # earnings
-    eh = []
-    for h in hist[:4]:
+    # Report history (Nov 21, 2026): up to 8 quarters from the earnings-score data (EPS and revenue, actual vs estimate); next-day move from the 4-quarter history.
+    eh = []; mv_by_d = {h.get('date'): h.get('move_1d_pct') for h in hist}
+    q8 = [q for q in (E.get('q8') or []) if q.get('d')]
+    src = [{'quarter': f"Q{q['fp']} {q['fy']}" if q.get('fp') and q.get('fy') else None, 'date': q['d'], 'eps_act': q.get('eps'), 'eps_est': q.get('est'),
+            'rev_act_usd': q.get('rev'), 'rev_est_usd': q.get('rest'), 'move_1d_pct': mv_by_d.get(q['d'])} for q in sorted(q8, key=lambda q: q['d'], reverse=True)[:8]] if len(q8) >= len(hist) else hist[:8]
+    for h in src:
         eb = None if h.get('eps_act') is None or h.get('eps_est') is None else (1 if h['eps_act'] >= h['eps_est'] else 0)
         rb = None if h.get('rev_act_usd') is None or not h.get('rev_est_usd') else (1 if h['rev_act_usd'] >= h['rev_est_usd'] else 0)
         rs = None if h.get('rev_act_usd') is None or not h.get('rev_est_usd') else r1((h['rev_act_usd'] / h['rev_est_usd'] - 1) * 100)
-        eh.append({'q': h.get('quarter'), 'd': h.get('date'), 'e': h.get('eps_act'), 'ee': h.get('eps_est'), 'eb': eb, 'rb': rb, 'rs': rs, 'mv': r1(h.get('move_1d_pct'))})
+        mm = lambda v: None if v is None else round(v / 1e6, 1)
+        eh.append({'q': h.get('quarter'), 'd': h.get('date'), 'e': h.get('eps_act'), 'ee': h.get('eps_est'), 'eb': eb, 'rb': rb, 'rs': rs, 'mv': r1(h.get('move_1d_pct')),
+                   'ra': mm(h.get('rev_act_usd')), 're': mm(h.get('rev_est_usd'))})
+    def _rate(n):
+        v = [h['rb'] for h in eh[:n] if h['rb'] is not None]
+        return round(sum(v) / len(v) * 100) if len(v) >= min(n, 2) else None
+    rl4, rl8 = _rate(4), _rate(8)
     o['earn'] = {'l4': E.get('l4'), 'l8': E.get('l8'), 'last': E.get('last'), 'streak': E.get('streak'), 'div': E.get('div'), 'mt': E.get('mt'),
-                 'rt': E.get('rt'), 'et': E.get('et'), 'yoy': E.get('yoy3'), 'prof4': E.get('prof4'), 'next': ned, 'h': eh}
+                 'rt': E.get('rt'), 'et': E.get('et'), 'yoy': E.get('yoy3'), 'prof4': E.get('prof4'), 'next': ned, 'h': eh, 'rl4': rl4, 'rl8': rl8, 'n8': len(eh)}
     # quarterly financials (USD millions)
     fq = []
     for x in rows:

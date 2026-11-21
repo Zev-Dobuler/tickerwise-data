@@ -10,7 +10,7 @@ for o in d['stocks']:
         r = o['risk']
         r['r'] = [[RK.index(k), v['e'], v['s'], first(v['w'],140) if (v['e'] or 0) >= 6 else ''] for k, v in r['r'].items()]
     o['fq'] = [[x['p'], 1 if x['k'] == 'E' else 0, x['rev'], x['npm'], x['y']] for x in o['fq'][-9:]]
-    o['earn']['h'] = [[h['q'], h['d'], h['e'], h['ee'], h['eb'], h['rb'], h['rs'], h['mv']] for h in o['earn']['h']]
+    o['earn']['h'] = [[h['q'], h['d'], h['e'], h['ee'], h['eb'], h['rb'], h['rs'], h['mv'], h.get('ra'), h.get('re')] for h in o['earn']['h']]
     if 'gw' in o:
         g = o['gw']; tr = g['tr']; g['tr'] = [tr[0][0], tr[-1][0], [v for _, v in tr]]
         g['note'] = ' '.join(re.split(r'(?<=[.])\s+', g['note'])[:2])
@@ -42,7 +42,7 @@ for o in d['stocks']:
       [I(T['off']),I(T['up']),I(T['v50']),I(T['v200']),I(T['x']),T['rsi'],T.get('pos')],
       [I(R['r1m']),I(R['r3m']),I(R['r6m']),I(R['rytd']),I(R['r1y']),I(R['vq'])],
       [E['l4'],E['l8'],E['last'],E['streak'],E['div'],E['mt'],E['rt'],E['et'],[I(v) for v in (E['yoy'] or [])],E['prof4'],E['next'],
-       [[h[0],h[1],E2(h[2]),E2(h[3]),h[4],h[5],I(h[6]),I(h[7])] for h in E['h']]],
+       [[h[0],h[1],E2(h[2]),E2(h[3]),h[4],h[5],I(h[6]),I(h[7]),h[8],h[9]] for h in E['h']],E.get('rl4'),E.get('rl8')],
       [[f[0],f[1],sig(f[2]),I(f[3]),I(f[4])] for f in o['fq']],
       [I(M['gross']),I(M['op']),I(M['net']),I(M['fcf'])],[E2(V['fpe']) if V['fpe'] is None else round(V['fpe'],1),None if V['ps'] is None else round(V['ps'],1),V['peg']],
       I(o['rg']),gw,risk,[1 if o['run']['p'] else 0,o['run']['m']] if o.get('run') else 0,
