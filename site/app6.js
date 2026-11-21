@@ -206,5 +206,6 @@ function route() {
   catch (e) { if (window.console) console.error(e); }
   document.title = 'Paper Trading — Tickerwise'; window.scrollTo(0, 0);
 }
+window.TWPP = { board, calc, chart, token };
 window.addEventListener('hashchange', route); route();
 })();
