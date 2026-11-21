@@ -42,7 +42,7 @@ for o in d['stocks']:
       [I(T['off']),I(T['up']),I(T['v50']),I(T['v200']),I(T['x']),T['rsi'],T.get('pos')],
       [I(R['r1m']),I(R['r3m']),I(R['r6m']),I(R['rytd']),I(R['r1y']),I(R['vq'])],
       [E['l4'],E['l8'],E['last'],E['streak'],E['div'],E['mt'],E['rt'],E['et'],[I(v) for v in (E['yoy'] or [])],E['prof4'],E['next'],
-       [[h[0],h[1],E2(h[2]),E2(h[3]),h[4],h[5],I(h[6]),I(h[7]),h[8],h[9]] for h in E['h']],E.get('rl4'),E.get('rl8')],
+       [[h[0],h[1],E2(h[2]),E2(h[3]),h[4],h[5],I(h[6]),I(h[7]),h[8],h[9]] for h in E['h']],E.get('rl4'),E.get('rl8'),E.get('x') or 0],
       [[f[0],f[1],sig(f[2]),I(f[3]),I(f[4])] for f in o['fq']],
       [I(M['gross']),I(M['op']),I(M['net']),I(M['fcf'])],[E2(V['fpe']) if V['fpe'] is None else round(V['fpe'],1),None if V['ps'] is None else round(V['ps'],1),V['peg']],
       I(o['rg']),gw,risk,[1 if o['run']['p'] else 0,o['run']['m']] if o.get('run') else 0,

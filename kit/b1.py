@@ -136,8 +136,17 @@ for t in tick:
         v = [h['rb'] for h in eh[:n] if h['rb'] is not None]
         return round(sum(v) / len(v) * 100) if len(v) >= min(n, 2) else None
     rl4, rl8 = _rate(4), _rate(8)
+    # Earnings Signal extras (Nov 21, 2026): signal score, looking-ahead, margin trajectory, 8-quarter price reaction around reports.
+    _zk = E.get('zk') or {}; _mv = (E.get('mv8') or {}).get('q') or []
+    _r1 = lambda v: None if v is None else round(v, 1)
+    EX = {'s': E.get('score'), 'l': E.get('label'), 'rv': E.get('revs'), 'rvp': _r1(E.get('revs_pct')), 'rvb': E.get('revs_basis'),
+          'cy': _zk.get('cy'), 'cy90': _zk.get('cy90'), 'nq': E.get('next_q'), 'ie': E.get('ieps'), 'iet': E.get('ieps_t'),
+          'ied': [None if v is None else round(v, 3) for v in (E.get('ieps_d') or [])], 'ir': E.get('irev'),
+          'ird': [None if v is None else round(v / 1e6, 1) for v in (E.get('irev_d') or [])], 'mt': E.get('mt'), 'm3': E.get('m3'), 'mb': E.get('mb'),
+          'pt': E.get('pt'), 'mv': [[q.get('d'), _r1(q.get('m7')), _r1(q.get('m')), _r1(q.get('m30'))] for q in _mv if q]}
+    EX = {k: v for k, v in EX.items() if v not in (None, [], '')}
     o['earn'] = {'l4': E.get('l4'), 'l8': E.get('l8'), 'last': E.get('last'), 'streak': E.get('streak'), 'div': E.get('div'), 'mt': E.get('mt'),
-                 'rt': E.get('rt'), 'et': E.get('et'), 'yoy': E.get('yoy3'), 'prof4': E.get('prof4'), 'next': ned, 'h': eh, 'rl4': rl4, 'rl8': rl8, 'n8': len(eh)}
+                 'rt': E.get('rt'), 'et': E.get('et'), 'yoy': E.get('yoy3'), 'prof4': E.get('prof4'), 'next': ned, 'h': eh, 'rl4': rl4, 'rl8': rl8, 'x': EX, 'n8': len(eh)}
     # quarterly financials (USD millions)
     fq = []
     for x in rows:
