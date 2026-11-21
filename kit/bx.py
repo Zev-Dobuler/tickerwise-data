@@ -43,7 +43,7 @@ def ins_pack(row):
         side = 'B' if re.search(r'buy', act, re.I) else 'S' if re.search(r'sell', act, re.I) else 'O'
         if side == 'B': buys += 1; bv += t.get('value') or 0
         if side == 'S': sells += 1; sv += t.get('value') or 0
-        out.append([(t.get('name') or '').title()[:26], (t.get('role') or '')[:18], side, t.get('shares'), None if t.get('value') is None else round(t['value'] / 1e6, 3), t.get('date')])
+        out.append([(t.get('name') or '').title()[:26], (t.get('role') or '').lstrip('* ')[:18], side, t.get('shares'), None if t.get('value') is None else round(t['value'] / 1e6, 3), t.get('date')])
     out.sort(key=lambda x: x[5] or '', reverse=True)
     return [row.get('all'), buys, sells, M(bv), M(sv), [[x[0], x[1], x[2], x[4], x[5]] for x in out[:5]], row.get('read')]
 for r in L('insiders'):
