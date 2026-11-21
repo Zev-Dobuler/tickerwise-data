@@ -190,7 +190,7 @@ function congress(s) {
   const amt = a => String(a || '').replace(/^\((Full|Partial)\)\s*/, '').replace(/^\s*/, '$').replace(/\s*-\s*/, ' – $');
   const body = `<div class="th-k"><div><span>Purchases, last 12 months</span><b class="up">${b}</b></div><div><span>Sales, last 12 months</span><b class="dn">${sl}</b></div><div><span>Signal</span><b><span class="badge ${net[1]}">${net[0]}</span></b></div></div>
     ${R.length ? `<div class="tbl-wrap" style="max-height:none"><table class="tw"><thead><tr><th>Traded</th><th>Member</th><th>Trade</th><th class="num">Amount</th></tr></thead><tbody>${R.map(r => `<tr><td>${dfmt(r[5])}</td><td><b>${esc(r[2])}</b> <span class="muted">${r[3] === 'S' ? 'Senate' : 'House'}${r[4] ? ' · ' + esc(r[4]) : ''}</span></td><td><b class="${r[0] === 'P' ? 'up' : r[0] === 'S' ? 'dn' : ''}">${r[0] === 'P' ? 'Purchase' : r[0] === 'S' ? 'Sale' : 'Exchange'}</b></td><td class="num">${esc(amt(r[1]))}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
-  return card('Congress Trades', 'stock trades by members of Congress', body + src('Quiver Quantitative, from STOCK Act disclosures. Members report trades up to 45 days late and only as dollar ranges. Showing the latest 8', ND.CG), 'cg-' + s.t);
+  return card('Congress Trades', 'stock trades by members of Congress', body + src('Quiver Quantitative, from STOCK Act disclosures. Members report trades up to 45 days late and only as dollar ranges. Showing the latest trades', ND.CG), 'cg-' + s.t);
 }
 
 /* ===== 7. ETFs That Own This (Institutions tab) ===== */
