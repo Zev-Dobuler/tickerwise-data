@@ -101,6 +101,45 @@ K['sec'] = [[r['t'], r['name'], r2(r['w1'], 1), r2(r['m1'], 1), r2(r['m3'], 1), 
 rg = m['regime']
 K['rg'] = {'h': [[x[0], x[1]] for x in rg['hist']], 'b': [[b['b'], b['n'], b['m1'], b['m1p'], b['m3'], b['m3p'], b['m6'], b['m6p'], b['m12'], b['m12p']] for b in rg['buckets']],
            'all': rg['all'], 'rules': rg['rules']}
+# The source history stops at the last month whose next-month return is known, so the latest finished month-end
+# (and the month in progress) are missing. Fill them with the same Core-5 rules (reproduces every stored month exactly).
+try:
+    import datetime as _dt
+    _X = {x['k']: x for x in json.load(open('/home/claude/tw2/data/macro.json'))}
+    _F, _Y, _E = _X['fred']['d'], _X['yh']['d'], _X['events']['v200']
+    def _ms(a):
+        y, mo, o = int(a[0][:4]), int(a[0][4:6]), {}
+        for v in a[1:]:
+            o['%04d-%02d' % (y, mo)] = v; mo += 1
+            if mo > 12: mo, y = 1, y + 1
+        return o
+    def _wm(a):
+        s = a[0].replace('-', ''); d0 = _dt.date(int(s[:4]), int(s[4:6]), int(s[6:8])); o = {}
+        for i, v in enumerate(a[1:]):
+            d = d0 + _dt.timedelta(days=7 * i)
+            if v is not None: o['%04d-%02d' % (d.year, d.month)] = v
+        return o
+    _S = [(_wm(_E), lambda x: 1 if x > 3 else .6 if x > 0 else .3 if x > -3 else 0), (_ms(_Y['^VIX']['m']), lambda x: 1 if x < 15 else .7 if x < 20 else .4 if x < 25 else .2 if x < 30 else 0),
+          (_ms(_F['NFCI']['m']), lambda x: 1 if x < -.5 else .7 if x < -.3 else .4 if x < 0 else 0), (_ms(_F['T10Y3M']['m']), lambda x: 1 if x > .5 else .6 if x > 0 else .2),
+          (_ms(_F['SAHMREALTIME']['m']), lambda x: 1 if x < .3 else .5 if x < .5 else 0)]
+    def _sc(k):
+        h = [f(s[k]) for s, f in _S if s.get(k) is not None]
+        return round(sum(h) / len(h) * 100) if len(h) >= 4 else None
+    _cur = K.get('asof', '')[:7] or _dt.date.today().strftime('%Y-%m')
+    _last = K['rg']['h'][-1][0]
+    y, mo = int(_last[:4]), int(_last[5:7])
+    while True:
+        mo += 1
+        if mo > 12: mo, y = 1, y + 1
+        k = '%04d-%02d' % (y, mo)
+        if k >= _cur: break
+        v = _sc(k)
+        if v is None: break
+        K['rg']['h'].append([k, v])
+    _m = _sc(_cur)
+    if _m is not None: K['rg']['mtd'] = [_cur, _m]
+except Exception as _e:
+    print('regime fill skipped:', _e)
 
 # ---------- valuation ----------
 mp = m['mp']['d']
