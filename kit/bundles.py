@@ -94,6 +94,10 @@ if os.path.exists(_bp):
 _zp = _D + 'zstyle.json' if os.path.exists(_D + 'zstyle.json') else os.path.join(_R, 'zs.json')
 if os.path.exists(_zp):
     _z = json.load(open(_zp)); pub['ZS'] = {k.replace('.', '-'): v for k, v in _z.get('T', {}).items() if k.replace('.', '-') in _names}; pub['ZSd'] = _z.get('read')
+# Quarterly gross margin, FCF margin, forward P/E and P/S history (kit/qgm.js + kit/qh.py), same source for every stock
+_hp = _D + 'qhist.json' if os.path.exists(_D + 'qhist.json') else os.path.join(_R, 'qh.json')
+if os.path.exists(_hp):
+    _h = json.load(open(_hp)); pub['QH'] = {k: v for k, v in _h.get('T', {}).items() if k in _names}; pub['QHd'] = _h.get('read')
 # What's Happening: 30-day event log + summary written nightly for every stock (kit/wh.py)
 _wp = _D + 'whatsup.json' if os.path.exists(_D + 'whatsup.json') else os.path.join(_R, 'wh.json')
 if os.path.exists(_wp):
