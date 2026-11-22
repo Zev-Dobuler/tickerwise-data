@@ -42,7 +42,10 @@ const css = `
 @media(max-width:900px){#tw-mn .mn-g{grid-template-columns:minmax(0,1fr)}#tw-mn .nw-list{max-height:none}#tw-mn .nw-i.more{display:none}#tw-mn .nw-list.open .nw-i.more{display:block}}
 @media(max-width:640px){#tw-mn .mn-cols{grid-template-columns:minmax(0,1fr);gap:8px}#tw-mn .mn-r{grid-template-columns:48px minmax(0,1fr) 60px 46px;font-size:13px}#tw-mn .card{padding:16px 14px 12px}}
 #tw-mn .nw-more{display:none;margin-top:10px}
-@media(max-width:900px){#tw-mn .nw-more{display:inline-flex}}`;
+@media(max-width:900px){#tw-mn .nw-more{display:inline-flex}}
+#app > section.tq-sec{padding-bottom:16px}
+#app > section.tq-sec + section.sec{padding-top:44px !important}
+@media(max-width:640px){#app > section.tq-sec + section.sec{padding-top:32px !important}}`;
 function movers() {
   if (!IX) return '';
   const bit = IDX.find(x => x[0] === mvI)[2], pi = PER.find(x => x[0] === mvP)[1];
