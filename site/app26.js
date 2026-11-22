@@ -3,11 +3,13 @@
 (function () {
 if (window.TWSPE) return;
 const $ = (s, r) => (r || document).querySelector(s), app = $('#app'); if (!app) return;
-const TODAY = { v: 17.1, d: 'Nov 20, 2026' };
+const SPE = ((window.TW || {}).NX || {}).SPE, MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], fd = s => { const p = (s || '').split('-'); return p.length === 3 ? MO[+p[1] - 1] + ' ' + +p[2] + ', ' + p[0] : s; };
+const TODAY = SPE && SPE.v ? { v: +SPE.v, d: fd(SPE.d), a5: +SPE.a5 || 19.8, a10: +SPE.a10 || 19.1 } : { v: 17.1, d: 'Nov 20, 2026', a5: 19.8, a10: 19.1 };
+try { const MK = window.TW.MK; if (SPE && MK && MK.val && MK.val.cur && MK.val.cur.sp500) MK.val.cur.sp500.forward = TODAY.v; } catch (e) {}
 /* [group, label line 1, label line 2, avg P/E, note] */
 const D = [
-  ['t', 'Today', TODAY.d.replace(', 2026', ''), TODAY.v, '', 'Today'],
-  ['a', '5-Year', 'Average', 19.8, '', '5Y'], ['a', '10-Year', 'Average', 19.1, '', '10Y'], ['a', '15-Year', 'Average', 17.6, '', '15Y'], ['a', '20-Year', 'Average', 16.5, '', '20Y'], ['a', '25-Year', 'Average', 16.4, '', '25Y'],
+  ['t', 'Today', TODAY.d.replace(/, \d{4}$/, ''), TODAY.v, '', 'Today'],
+  ['a', '5-Year', 'Average', TODAY.a5, '', '5Y'], ['a', '10-Year', 'Average', TODAY.a10, '', '10Y'], ['a', '15-Year', 'Average', 17.6, '', '15Y'], ['a', '20-Year', 'Average', 16.5, '', '20Y'], ['a', '25-Year', 'Average', 16.4, '', '25Y'],
   ['p', '2002–06', 'Period', 16.0, '≈', "'02–06"], ['p', '2007–11', 'Period', 13.8, '', "'07–11"], ['p', '2011–15', 'Period', 14.0, '', "'11–15"], ['p', '2016–20', 'Period', 17.4, '', "'16–20"], ['p', '2021–25', 'Period', 20.0, '', "'21–25"]
 ];
 const TOP = 24, h = v => (v / TOP * 100).toFixed(1) + '%', vs = v => Math.round((TODAY.v / v - 1) * 100);
@@ -67,12 +69,12 @@ function build() {
   sec.innerHTML = `<div class="wrap"><div class="card" id="spx-pe" style="padding:22px 22px 18px">
     <div class="card-h" style="display:block"><h3 style="margin:0">S&amp;P 500 Forward P/E: Today vs History</h3>
     <p class="muted" style="margin:6px 0 0;font-size:13.5px">What investors pay for each $1 of the earnings expected over the next 12 months. Lower = cheaper. Each column is a different time frame, so you can see today next to every one.</p></div>
-    <div class="pe-sum"><span>Today <b style="color:#C2410C">${TODAY.v.toFixed(1)}</b></span><span><b>${word(19.8)}</b> the 5-year average</span><span><b>${word(19.1)}</b> the 10-year average</span><span><b>${word(16.5)}</b> the 20-year average</span><span>25-year low: <b>8.6</b> (Nov 2008)</span></div>
+    <div class="pe-sum"><span>Today <b style="color:#C2410C">${TODAY.v.toFixed(1)}</b></span><span><b>${word(TODAY.a5)}</b> the 5-year average</span><span><b>${word(TODAY.a10)}</b> the 10-year average</span><span><b>${word(16.5)}</b> the 20-year average</span><span>25-year low: <b>8.6</b> (Nov 2008)</span></div>
     <div class="pe-plot"><div class="pe-line" style="bottom:${h(TODAY.v)}"></div><div class="pe-g">${cols}</div></div>
     <div class="pe-g pe-x">${xs}</div>
     <div class="pe-g pe-grp"><div style="border-color:#F28C28;color:#C2410C">Now</div><div style="grid-column:span 5;border-color:#2F6BFF;color:#2F6BFF">Average over the last…</div><div></div><div style="grid-column:span 5;border-color:#0EA5A0;color:#0E7490">Average during…</div></div>
     <p class="muted" style="font-size:12px;margin:8px 0 0">Under each column: how today compares. <span class="up">Green</span> = today is cheaper than that time frame, <span class="dn">red</span> = pricier.</p>
-    <p class="pe-src">Source: <a href="https://www.factset.com/earningsinsight" target="_blank" rel="noopener">FactSet Earnings Insight</a>. Today, 5- and 10-year averages: Nov 20, 2026 report. 15-, 20- and 25-year averages and the 2008 low: FactSet, as of Nov 5, 2026. 2016–20 and 2021–25: FactSet's 5-year averages in its Dec 18, 2020 and Dec 12, 2025 reports. 2011–15 and 2007–11 are worked out from FactSet's 5- and 10-year averages (Dec 2020 and Dec 2016 reports). 2002–06 is worked out from the 20- and 25-year averages, so it is approximate (±0.5).</p>
+    <p class="pe-src">Source: <a href="https://www.factset.com/earningsinsight" target="_blank" rel="noopener">FactSet Earnings Insight</a>. Today, 5- and 10-year averages: ${TODAY.d} report. 15-, 20- and 25-year averages and the 2008 low: FactSet, as of Nov 5, 2026. 2016–20 and 2021–25: FactSet's 5-year averages in its Dec 18, 2020 and Dec 12, 2025 reports. 2011–15 and 2007–11 are worked out from FactSet's 5- and 10-year averages (Dec 2020 and Dec 2016 reports). 2002–06 is worked out from the 20- and 25-year averages, so it is approximate (±0.5).</p>
   </div></div>`;
   return sec;
 }

@@ -18,7 +18,8 @@ const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct
 
 /* ===== 1. Market Heatmap (Markets → Heatmap) ===== */
 const HP = [['1D', 1], ['1W', 7], ['1M', 30], ['3M', 91], ['YTD', 'ytd'], ['1Y', 365]];
-let hmP = '1D', hmG = 'sec';
+let hmP = '1D', hmG = 'sec', hmU = 'sp';
+const HU = [['sp', 'S&P 500', 1], ['ndx', 'Nasdaq-100', 2], ['dow', 'Dow 30', 4], ['all', 'All Three', 7], ['ours', 'Our Stocks', 0]];
 function chg(t, p) {
   const S = pxSeries(t); if (!S || S.length < 2) return null; const last = S[S.length - 1];
   if (p === 1) return (last.c / S[S.length - 2].c - 1) * 100;
@@ -45,8 +46,10 @@ function squarify(items, x, y, w, h) {
 }
 function heatmap() {
   const p = HP.find(x => x[0] === hmP)[1], W = 1200, H = 660;
-  const items = S.map(s => ({ s, cap: fcv(s, 'Market Cap') })).filter(o => nz(o.cap) && o.cap > 0).map(o => ({ s: o.s, v: Math.sqrt(o.cap), r: chg(o.s.t, p) }));
-  const gk = o => hmG === 'sec' ? (o.s.sec || 'Other') : (o.s.th || 'Other');
+  const IX = ((TW.NX || {}).IX || {}).T, U = IX ? hmU : 'ours', PI = { 1: 4, 7: 5, 30: 6, 91: 7, ytd: 8, 365: 9 }[p], BIT = (HU.find(x => x[0] === U) || [])[2];
+  const items = U === 'ours' ? S.map(s => ({ s, cap: fcv(s, 'Market Cap') })).filter(o => nz(o.cap) && o.cap > 0).map(o => ({ s: o.s, v: Math.sqrt(o.cap), r: chg(o.s.t, p), cap: o.cap }))
+    : Object.entries(IX).filter(([t, v]) => (v[3] & BIT) && nz(v[2]) && v[2] > 0).map(([t, v]) => ({ s: BY[t] || { t, n: v[0], ix: 1 }, g: v[1] || 'Other', v: Math.sqrt(v[2]), r: v[PI], cap: v[2] * 1e9 }));
+  const gk = o => o.g || (hmG === 'sec' ? (o.s.sec || 'Other') : (o.s.th || 'Other'));
   const G = {}; items.forEach(o => { (G[gk(o)] = G[gk(o)] || []).push(o); });
   let groups = Object.entries(G).map(([k, v]) => ({ k, v: v.reduce((a, b) => a + b.v, 0), list: v.sort((a, b) => b.v - a.v) })).sort((a, b) => b.v - a.v);
   const gl = squarify(groups, 0, 0, W, H); let g = '';
@@ -54,8 +57,8 @@ function heatmap() {
     g += `<rect x="${G1.x}" y="${G1.y}" width="${G1.w}" height="${G1.h}" fill="#0F172A"/>`;
     if (top) g += `<text x="${G1.x + 5}" y="${G1.y + 12}" font-size="10.5" font-weight="700" fill="#CBD5E1">${esc(G1.k.toUpperCase().slice(0, Math.floor(G1.w / 7)))}</text>`;
     squarify(G1.list, G1.x + pad, G1.y + top + pad, G1.w - 2 * pad, G1.h - top - 2 * pad).forEach(c => {
-      const fs = Math.max(8, Math.min(26, Math.min(c.w / 4.2, c.h / 2.6))), show = c.w > 26 && c.h > 16, tip = `${c.s.t} · ${c.s.n}|${hmP} change: ${nz(c.r) ? sg(c.r, 1) : '—'} · Market cap ${capFmt(fcv(c.s, 'Market Cap'))} · Score ${c.s.ws}/10`;
-      g += `<a href="#/stock/${esc(c.s.t)}"><rect class="hv hm-c" x="${c.x + 0.5}" y="${c.y + 0.5}" width="${Math.max(0, c.w - 1)}" height="${Math.max(0, c.h - 1)}" fill="${hmCol(c.r, p)}" data-tip="${esc(tip)}"/>`;
+      const fs = Math.max(8, Math.min(26, Math.min(c.w / 4.2, c.h / 2.6))), show = c.w > 26 && c.h > 16, tip = `${c.s.t} · ${c.s.n}|${hmP} change: ${nz(c.r) ? sg(c.r, 1) : '—'} · Market cap ${capFmt(c.cap)}${!c.s.ix && c.s.ws != null ? ` · Score ${c.s.ws}/10` : ''}`;
+      g += `<a${c.s.ix ? '' : ` href="#/stock/${esc(c.s.t)}"`}><rect class="hv hm-c" x="${c.x + 0.5}" y="${c.y + 0.5}" width="${Math.max(0, c.w - 1)}" height="${Math.max(0, c.h - 1)}" fill="${hmCol(c.r, p)}" data-tip="${esc(tip)}"/>`;
       if (show) g += `<text x="${c.x + c.w / 2}" y="${c.y + c.h / 2 + (c.h > fs * 2.4 ? -fs * 0.12 : fs * 0.35)}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="#fff" pointer-events="none">${esc(c.s.t)}</text>${c.h > fs * 2.4 ? `<text x="${c.x + c.w / 2}" y="${c.y + c.h / 2 + fs * 0.95}" text-anchor="middle" font-size="${fs * 0.62}" font-weight="600" fill="#fff" opacity=".92" pointer-events="none">${nz(c.r) ? sg(c.r, 1) : '—'}</text>` : ''}`;
       g += '</a>'; });
   });
@@ -63,20 +66,21 @@ function heatmap() {
   const best = items.filter(o => nz(o.r)).sort((a, b) => b.r - a.r), sc = { 1: 3, 7: 6, 30: 12, 91: 20, ytd: 30, 365: 40 }[p];
   const leg = [-1, -0.66, -0.33, 0, 0.33, 0.66, 1].map(x => `<span style="background:${hmCol(x * sc, p)}">${sg(x * sc, 0)}</span>`).join('');
   return `<div class="card hm"><div class="hm-top"><div class="seg">${HP.map(x => `<button type="button" class="${x[0] === hmP ? 'on' : ''}" onclick="twHm('${x[0]}')">${x[0]}</button>`).join('')}</div>
-      <div class="seg">${[['sec', 'By Sector'], ['th', 'By Theme']].map(x => `<button type="button" class="${x[0] === hmG ? 'on' : ''}" onclick="twHmG('${x[0]}')">${x[1]}</button>`).join('')}</div>
+      ${((TW.NX || {}).IX) ? `<div class="seg">${HU.map(x => `<button type="button" class="${x[0] === hmU ? 'on' : ''}" onclick="twHmU('${x[0]}')">${x[1]}</button>`).join('')}</div>` : ''}${hmU === 'ours' || !((TW.NX || {}).IX) ? `<div class="seg">${[['sec', 'By Sector'], ['th', 'By Theme']].map(x => `<button type="button" class="${x[0] === hmG ? 'on' : ''}" onclick="twHmG('${x[0]}')">${x[1]}</button>`).join('')}</div>` : ''}
       <div class="hm-leg">${leg}</div></div>
-    <div class="hm-sum"><span><b class="up">${up}</b> up</span><span><b class="dn">${dn}</b> down</span><span>Average <b class="${cls(avg)}">${sg(avg, 1)}</b></span>${best.length ? `<span>Best <a href="#/stock/${best[0].s.t}"><b>${esc(best[0].s.t)}</b></a> <b class="up">${sg(best[0].r, 1)}</b></span><span>Worst <a href="#/stock/${best[best.length - 1].s.t}"><b>${esc(best[best.length - 1].s.t)}</b></a> <b class="dn">${sg(best[best.length - 1].r, 1)}</b></span>` : ''}</div>
+    <div class="hm-sum"><span><b class="up">${up}</b> up</span><span><b class="dn">${dn}</b> down</span><span>Average <b class="${cls(avg)}">${sg(avg, 1)}</b></span>${best.length ? `<span>Best <a${best[0].s.ix ? '' : ` href="#/stock/${best[0].s.t}"`}><b>${esc(best[0].s.t)}</b></a> <b class="up">${sg(best[0].r, 1)}</b></span><span>Worst <a${best[best.length - 1].s.ix ? '' : ` href="#/stock/${best[best.length - 1].s.t}"`}><b>${esc(best[best.length - 1].s.t)}</b></a> <b class="dn">${sg(best[best.length - 1].r, 1)}</b></span>` : ''}</div>
     <div class="chart hm-svg"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Market heatmap">${g}</svg></div>
-    <p class="nx-src">Every stock we cover (funds without a market cap are left out). Box size = market cap (square-root scaled, so smaller companies stay visible); color = price change over the period. Click a box to open the stock. Prices as of ${dfmt(TW.asof)} close.</p></div>`;
+    <p class="nx-src">${U === 'ours' ? 'Every stock we cover (funds without a market cap are left out).' : `Every ${(HU.find(x => x[0] === U) || [])[1] === 'All Three' ? 'S&P 500, Nasdaq-100 and Dow 30' : (HU.find(x => x[0] === U) || [])[1]} stock (${items.length}); boxes for stocks we cover open their page. Index members, sectors and market caps from stockanalysis.com, price changes from Yahoo Finance, as of ${dfmt((TW.NX.IX || {}).read)} close.`} Box size = market cap (square-root scaled, so smaller companies stay visible); color = price change over the period. ${U === 'ours' ? `Click a box to open the stock. Prices as of ${dfmt(TW.asof)} close.` : ''}</p></div>`;
 }
 window.twHm = p => { hmP = p; const el = $('.card.hm'); if (el) el.outerHTML = heatmap(); };
+window.twHmU = u => { hmU = u; const el = $('.card.hm'); if (el) el.outerHTML = heatmap(); };
 window.twHmG = g => { hmG = g; const el = $('.card.hm'); if (el) el.outerHTML = heatmap(); };
 function patchMarketsHeat(sub) {
   const ph = $('.page-h .wrap'), nav = ph && $('.subnav', ph); if (!nav) return;
   if (!$('a[data-k="heatmap"]', nav)) nav.insertAdjacentHTML('afterbegin', `<a href="#/markets/heatmap" data-k="heatmap" class="hm-tab">🟩 Heatmap</a>`);
   $$('a', nav).forEach(a => a.classList.toggle('on', a.dataset.k === (sub || '')));
   if (sub !== 'heatmap') return;
-  $('h1', ph).textContent = 'Market Heatmap'; const pp = $('p', ph); if (pp) pp.textContent = 'Every stock we cover at a glance: size is market cap, color is the price move. As of ' + dfmt(TW.asof) + '.';
+  $('h1', ph).textContent = 'Market Heatmap'; const pp = $('p', ph); if (pp) pp.textContent = 'The S&P 500, Nasdaq-100 and Dow 30 at a glance, or just the stocks we cover: size is market cap, color is the price move.';
   const sec = $('#app > section.sec'); if (sec) sec.outerHTML = `<section class="sec" style="padding-top:22px"><div class="wrap">${heatmap()}</div></section>`;
   document.title = 'Market Heatmap — Tickerwise';
 }
