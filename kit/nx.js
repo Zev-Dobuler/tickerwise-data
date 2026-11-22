@@ -1,9 +1,9 @@
 /* Tickerwise feature pulls (Nov 22, 2026). Run each block in Zev's Chrome on the site named, with window.TK = [all tickers from pub.json R].
    Each block is fire-and-forget: start it, poll window.__done === TK.length, then read window.__OUT (JSON) with get_page_text in <=45K slices
    (document.body.innerHTML='<main><article><pre id=o></pre></article></main>'; o.textContent=__OUT.slice(i*45000,(i+1)*45000)).
-   Collect the outputs into /home/claude/tw2/data/nx_new.json as {read:'YYYY-MM-DD', SEA:{}, SEG:{}, SI:{}, CG:{}, ETF:{}, TH:{}} and run kit/nx.py (run.sh does).
+   Collect the outputs into /home/claude/tw2/data/nx_new.json as {read:'YYYY-MM-DD', SEA:{}, SEG:{}, SI:{}, CG:{}, ETF:{}, TH:{}, NEWS:{A,T}, CALL:{}} and run kit/nx.py (run.sh does).
    Same fields for every stock: holdings and wish list are pulled identically.
-   Cadence: SEA (Yahoo) weekly; SI (Dataroma) and SEG (stockanalysis) weekly on Mondays; CG (Quiver), ETF (etfdb) and TH (MarketBeat) nightly. */
+   Cadence: SEA (Yahoo) weekly; SI (Dataroma) and SEG (stockanalysis) weekly on Mondays; CG (Quiver), ETF (etfdb) and TH (MarketBeat) nightly. NEWS and CALL (Yahoo Finance) nightly. */
 
 const sl = ms => new Promise(r => setTimeout(r, ms));
 const rows = (d, sel) => [...d.querySelectorAll(sel || 'table tr')].map(r => [...r.cells].map(c => c.textContent.replace(/\s+/g, ' ').trim()));
@@ -52,3 +52,16 @@ window.pullTH = async () => { const o = {}; window.__done = 0; const now = new D
       const X = R.filter(c => c.length >= 6).map(c => { const m = (c[5] || '').match(/\$([\d,.]+)\s*$/), [mm, dd, yy] = c[0].split('/').map(Number); return { d: new Date(Date.UTC(yy, mm - 1, dd)), f: c[1].replace(/\d of 5 stars/, '').replace(/Subscribe to MarketBeat.*$/, '').trim(), tg: m ? +m[1].replace(/,/g, '') : null }; }).filter(r => r.tg && !isNaN(r.d));
       const pts = []; for (const e of ends) { const lo = new Date(e - 365 * 864e5), lat = {}; X.forEach(r => { if (r.d <= e && r.d >= lo && (!lat[r.f] || r.d > lat[r.f].d)) lat[r.f] = r; }); const L = Object.values(lat); if (L.length >= 2) pts.push([e.toISOString().slice(0, 10), +(L.reduce((a, b) => a + b.tg, 0) / L.length).toFixed(2), L.length]); }
       if (pts.length >= 3) o[t] = pts; } window.__done++; await sl(700); } window.__OUT = JSON.stringify(o); };
+
+/* --- NEWS: finance.yahoo.com — latest 3 stories per stock with photos, de-duplicated -> {A:[[title, publisher, link (minus https://finance.yahoo.com/), unix time, image ('~' = https://media.zenfs.com/en/)]], T:{ticker:[index]}}. Links open the source. --- */
+window.pullNEWS = async () => { const A = [], ix = {}, T = {}; window.__done = 0;
+  for (const t of TK) { try { const r = await fetch('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(t) + '&newsCount=12&quotesCount=0&enableFuzzyQuery=false').then(x => x.json());
+      const L = (r.news || []).filter(n => (n.relatedTickers || []).includes(t) && n.type === 'STORY').slice(0, 3); if (L.length) T[t] = L.map(n => { if (ix[n.link] == null) { const R = (n.thumbnail && n.thumbnail.resolutions) || [], o = R.find(x => x.tag === 'original'); ix[n.link] = A.length; A.push([n.title, n.publisher, n.link.replace('https://finance.yahoo.com/', ''), n.providerPublishTime, o ? o.url.replace('https://media.zenfs.com/en/', '~') : '']); } return ix[n.link]; });
+    } catch (e) {} window.__done++; await sl(350); } window.__OUT = JSON.stringify({ A, T }); };
+
+/* --- CALL: finance.yahoo.com — latest earnings-call coverage per stock (highlights first, then transcript), last 130 days -> {ticker: [[title, publisher, link, unix time, image]] (up to 2)}. --- */
+window.pullCALL = async () => { const o = {}; window.__done = 0; const cut = Date.now() / 1000 - 130 * 86400;
+  for (const t of TK) { try { const r = await fetch('https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(t) + '&newsCount=30&quotesCount=0&enableFuzzyQuery=false').then(x => x.json());
+      const L = (r.news || []).filter(n => (n.relatedTickers || []).includes(t) && /earnings call|call transcript|call highlights/i.test(n.title) && n.providerPublishTime > cut).sort((a, b) => (/highlights/i.test(b.title) - /highlights/i.test(a.title)) || b.providerPublishTime - a.providerPublishTime).slice(0, 2)
+        .map(n => { const R = (n.thumbnail && n.thumbnail.resolutions) || [], o2 = R.find(x => x.tag === 'original'); return [n.title, n.publisher, n.link.replace('https://finance.yahoo.com/', ''), n.providerPublishTime, o2 ? o2.url.replace('https://media.zenfs.com/en/', '~') : '']; });
+      if (L.length) o[t] = L; } catch (e) {} window.__done++; await sl(300); } window.__OUT = JSON.stringify(o); };

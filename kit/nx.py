@@ -1,4 +1,4 @@
-"""Merge the nightly feature pulls (data/nx_new.json, any subset of SEA, SEG, SI, CG, ETF, TH) into data/nx.json.
+"""Merge the nightly feature pulls (data/nx_new.json, any subset of SEA, SEG, SI, CG, ETF, TH, NEWS, CALL) into data/nx.json.
 Each key is replaced as a whole for the tickers pulled and stamped with today's date in nx['d']. Same fields for every stock."""
 import json, os, datetime
 D = '/home/claude/tw2/data/'; R = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'nx.json')) else '/home/claude/tickerwise-data'

@@ -114,7 +114,7 @@ function build(spec) {
   return { id: spec.seed, name: spec.name || spec.seed, created: spec.from, start: spec.start, lots, mode: 'game', pub: true };
 }
 /* demo paper-trading players for the leaderboard preview (game rules: buys only from the start date, at real closes) */
-const DEMO_PP = [['NorthStarTrades', 'Chicago, IL', 'Tech Rebound', '2026-05-11', [1, 0, 0, '#2F6BFF', '']], ['TLV_Bull', 'Tel Aviv, Israel', 'Chips & Defense', '2026-06-02', [2, 1, 4, '#0B1B3F', 'b']], ['OakLeafValue', 'Portland, OR', 'Boring Compounders', '2026-04-20', [0, 3, 1, '#00B86B', 'g']],
+const DEMO_PP = [['NorthStarTrades', 'Chicago, IL', 'Tech Rebound', '2026-05-11', [1, 0, 0, '#2F6BFF', '']], ['BullishInBoston', 'Boston, MA', 'Chips & Defense', '2026-06-02', [2, 1, 4, '#0B1B3F', 'b']], ['OakLeafValue', 'Portland, OR', 'Boring Compounders', '2026-04-20', [0, 3, 1, '#00B86B', 'g']],
   ['ChipChaser', 'San Jose, CA', 'Semis Only', '2026-07-06', [3, 0, 5, '#7C3AED', '']], ['DividendDana', 'Charlotte, NC', 'Income First', '2026-05-26', [1, 4, 2, '#E04B4B', '']], ['Rocket_Rob', 'Huntsville, AL', 'To The Moon', '2026-06-23', [0, 2, 0, '#F28C28', 'b']],
   ['QuietCompounder', 'London, UK', 'Slow And Steady', '2026-03-30', [4, 0, 6, '#0EA5E9', 'g']], ['MidwestMomentum', 'Columbus, OH', 'Trend Rider', '2026-08-04', [2, 2, 3, '#2F6BFF', '']], ['SatoshiSam', 'Austin, TX', 'Crypto Adjacent', '2026-07-20', [5, 0, 4, '#0B1B3F', '']], ['GreenCandleGal', 'Toronto, Canada', 'AI Picks', '2026-05-04', [0, 1, 2, '#00B86B', '']]];
 const THM = th => S.filter(s => th.some(x => s.th === x) && s.sec !== 'ETF').map(s => s.t);
