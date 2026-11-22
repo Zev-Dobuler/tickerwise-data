@@ -389,5 +389,5 @@ function route() {
   if (k === 'stock' && p[1]) { const t = decodeURIComponent(p[1]).toUpperCase(), tab = p[2] || 'overview'; wait(() => $('.main') && !$('.main .bx-set'), () => { if (tab === 'overview') put([() => dna(t)], $('.main')); else if (tab === 'technicals') put([() => volglow(t)], $('.main')); }); }
 }
 window.addEventListener('hashchange', () => setTimeout(route, 90)); setTimeout(route, 120);
-window.TWB2 = Object.assign({ dna, volglow, showcase }, ALL);
+window.TWB2 = Object.assign({ dna, volglow, showcase, frame, host, SEC }, ALL);
 })();
