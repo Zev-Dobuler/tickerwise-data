@@ -101,7 +101,7 @@ function hydrate() {
 }
 
 /* ---------- navigation in order of progression ---------- */
-const ORDER = ['home', 'markets', 'screener', 'themes', 'compare', 'insights', 'investors', 'social', 'paper', 'watchlist', 'plans'];
+const ORDER = ['home', 'markets', 'screener', 'themes', 'compare', 'insights', 'investors', 'social', 'paper', 'watchlist', 'tools', 'plans'];
 function nav() { const n = $('#navlinks'); if (!n) return; const sc = $('a[data-r="screener"]', n); if (sc && sc.textContent !== 'Screener') sc.textContent = 'Screener';
   const mt = $('a[data-r="method"]', n); if (mt) mt.remove(); const so = $('a[data-r="social"]', n); if (so && so.textContent !== 'Social Trading') so.textContent = 'Social Trading';
   const cur = $$('a[data-r]', n).map(a => a.dataset.r), want = ORDER.filter(r => cur.includes(r)).concat(cur.filter(r => !ORDER.includes(r)));
