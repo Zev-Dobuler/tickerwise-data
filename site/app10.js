@@ -8,7 +8,6 @@ const { S, BY, esc, nz, sg, cls, dfmt, pxSeries } = window.TWX || {};
 const PP = window.TWPP || {}, TW = window.TW || {}, F = TW.F || {}, AN = TW.AN || {}, X = TW.X || {}, ASOF = TW.asof;
 const st = document.createElement('style'); st.id = 'cm-css'; st.textContent = `
 .tabs.tabs-5{grid-template-columns:repeat(5,1fr)}@media (max-width:980px){.tabs.tabs-5{grid-template-columns:repeat(3,1fr)}}
-.tabs a[data-k="community"]{position:relative}.tabs a[data-k="community"]:after{content:"NEW";position:absolute;top:-7px;right:8px;font:800 9.5px Inter,sans-serif;letter-spacing:.05em;background:#00B86B;color:#fff;padding:2px 6px;border-radius:999px}
 .tabs-lbl .cm-own{float:right;text-transform:none;letter-spacing:0;font:700 12.5px Inter,sans-serif;color:#2F6BFF;text-decoration:none;background:#fff;border:1px solid #D8E1F0;border-radius:999px;padding:3px 10px;margin-top:-4px}
 .cm-top{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:center}.cm-gauge{display:flex;height:14px;border-radius:999px;overflow:hidden;background:#EEF2F8;margin:10px 0 6px}.cm-gauge i{display:block;height:100%}
 .cm-gl{display:flex;justify-content:space-between;font:700 13px Inter,sans-serif}.cm-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cm-st>div{background:#F7F9FC;border-radius:12px;padding:10px 12px}.cm-st span{display:block;font-size:12px;color:var(--mut);font-weight:600}.cm-st b{font:800 21px 'Space Grotesk',sans-serif}
