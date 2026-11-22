@@ -82,6 +82,7 @@ async function notifs() {
   jget('tw_orders', []).filter(o => o.st === 'filled' && o.fd && dnum(o.fd) >= (ld || 0) - 7).forEach(o => N.push({ id: 'or:' + o.id, i: '🧾', t: `Paper order filled: ${o.side === 'buy' ? 'bought' : 'sold'} ${o.q} ${o.t} at ${usd(o.fp)}`, h: '#/orders', d: o.fd }));
   W.map(t => BY[t]).filter(s => s && s.earn && s.earn.next).forEach(s => { const dd = dnum(s.earn.next) - dnum(td); if (dd >= 0 && dd <= 2) N.push({ id: 'er:' + s.t + s.earn.next, i: '📅', t: `${s.t} reports earnings ${dd === 0 ? 'today' : dd === 1 ? 'tomorrow' : 'in 2 days'} (${dfmt(s.earn.next)})`, h: '#/preview/' + s.t, d: td }); });
   try { const H = window.TWA && window.TWA.hist ? await window.TWA.hist() : null; if (H && H.d && H.d.length > 1) { const n = H.d.length; W.forEach(t => { const r = (H.T || {})[t]; if (r && r[n - 1] && r[n - 2] && r[n - 1][0] !== r[n - 2][0]) N.push({ id: 'sc:' + t + H.d[n - 1], i: r[n - 1][0] > r[n - 2][0] ? '⬆️' : '⬇️', t: `${t} score ${r[n - 2][0]} → ${r[n - 1][0]}`, h: '#/stock/' + t, d: H.d[n - 1] }); }); } } catch (e) {}
+  Object.entries(jget('tw_thesis', {})).forEach(([t, x]) => { const h = window.TWR5 && window.TWR5.health ? window.TWR5.health(t, x) : null; if (h && h.st === 'br') N.push({ id: 'th:' + t + h.f[0], i: '🧭', t: `Thesis broken on ${t}: ${h.f[0]}`, h: '#/theses', d: td }); });
   jget('tw_pred_res', []).slice(-5).forEach(p => N.push({ id: 'pr:' + p.k, i: p.ok ? '🎯' : '❌', t: `Prediction ${p.ok ? 'correct' : 'missed'}: ${p.t} ${p.v === 'beat' ? 'beat' : 'miss'} (+${p.pts || 0} pts)`, h: '#/predict', d: p.d }));
   if (member()) { try { const mine = await q('CommunityPosts', { kind: { $eq: 'qa' }, nick: { $eq: nick() } }, 30); if (mine && mine.length) { const ans = await q('CommunityPosts', { kind: { $eq: 'ans' }, parent: { $in: mine.map(m => m._id) } }, 50); (ans || []).filter(a => a.nick !== nick()).forEach(a => N.push({ id: 'qa:' + a._id, i: '💬', t: `${a.nick} answered your question: “${String(a.text).slice(0, 70)}”`, h: '#/community', d: String(a._at || '').slice(0, 10) })); } } catch (e) {} }
   return N.sort((a, b) => (b.d || '') < (a.d || '') ? -1 : 1);
@@ -122,7 +123,7 @@ function shortCard(t) { const sh = ((TW.X || {})[t] || {}).sh; if (!sh) return '
 function stockTab(t, tab) {
   const m = $('.main'); if (!m || $('#r3-st', m)) return; let h = '';
   if (tab === 'overview') h = peers(t) + houseAd('stock');
-  else if (tab === 'analysts') h = targetHist(t);
+  
   else if (tab === 'financials') h = segments(t);
   else if (tab === 'technicals') h = techExtras(t);
   else if (tab === 'short') h = shortCard(t);

@@ -7,7 +7,7 @@ if (window.TWA) return;
 const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const X = window.TWX || {}, { BY, esc, nz, dfmt } = X, app = $('#app'); if (!app) return;
 const CID = '5883ec70-a62e-4258-806c-af065b13f4c9', API = 'https://www.wixapis.com', MK = 'tw_member', PK = 'tw_pkce';
-const KEYS = ['tw-watchlist', 'tw_paper', 'tw_alerts', 'tw_journal', 'tw_replay', 'tw_streak', 'tw_inv_follow', 'tw_follow', 'tw_xray', 'tw_comm', 'tw_ps', 'tw_groups', 'tw_leagues', 'tw_orders', 'tw_opts', 'tw_dash', 'tw_votes'];
+const KEYS = ['tw-watchlist', 'tw_paper', 'tw_alerts', 'tw_journal', 'tw_replay', 'tw_streak', 'tw_inv_follow', 'tw_follow', 'tw_xray', 'tw_comm', 'tw_ps', 'tw_groups', 'tw_leagues', 'tw_orders', 'tw_opts', 'tw_dash', 'tw_votes', 'tw_thesis', 'tw_riskpf', 'tw_preds', 'tw_pred_res', 'tw_acad', 'tw_tdl', 'tw_pick5', 'tw_legend', 'tw_follow_m', 'tw_upv'];
 const jget = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const rand = n => b64u(crypto.getRandomValues(new Uint8Array(n)));

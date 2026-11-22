@@ -383,10 +383,10 @@ function route() {
   const W = () => !$('#app .bx-set') && $('#app .sec .wrap'), first = () => $('#app .sec .wrap');
   if (k === 'home') wait(() => !$('#app .bx-set') && $('#app section:nth-of-type(2)'), () => { const s2 = $('#app section:nth-of-type(2)'), sec = document.createElement('section'); sec.className = 'sec'; sec.style.paddingTop = '18px'; sec.innerHTML = '<div class="wrap"></div>'; s2.before(sec); put([galaxy], sec.firstChild, 'append');
     const s3 = $('#hm-social', app) || $('#r2-hsotd'); if (s3) { const sx = document.createElement('section'); sx.className = 'sec'; sx.style.paddingTop = '10px'; sx.innerHTML = '<div class="wrap"></div>'; s3.after(sx); put([flap, odometer], sx.firstChild, 'append'); } });
-  const map = { markets: [weather, globe, terrain], screener: [race], themes: [cells], investors: [river, orbit], tools: [odometer, scanner], signals: [rain], paper: [holo], social: [magnet], dashboard: [city], calendar: [ripple], briefing: [ripple], academy: [aurora], insights: [story], community: [aurora], learn: [story] };
+  const map = { markets: [weather, globe, terrain], themes: [cells], investors: [river, orbit], tools: [odometer, scanner], signals: [rain], paper: [holo], social: [magnet], dashboard: [city], calendar: [ripple], briefing: [ripple], insights: [story], community: [aurora], learn: [story] };
   if (k === 'tools') wait(() => $('#app .tt-g') && !$('#bx-tt'), () => $('#app .tt-g').insertAdjacentHTML('beforeend', '<a class="tt-tool" id="bx-tt" href="#/showcase"><em>New</em><i>✨</i><b>Motion Gallery</b><span>All 20 live data banners in one place.</span></a>'));
   if (map[k] && !(k === 'investors' && p[1]) && !(k === 'paper' && p[1])) wait(W, () => put(map[k], first()));
-  if (k === 'stock' && p[1]) { const t = decodeURIComponent(p[1]).toUpperCase(), tab = p[2] || 'overview'; wait(() => $('.main') && !$('.main .bx-set'), () => { if (tab === 'overview') put([() => dna(t)], $('.main')); else if (tab === 'technicals') put([() => volglow(t)], $('.main')); }); }
+  if (k === 'stock' && p[1]) { const t = decodeURIComponent(p[1]).toUpperCase(), tab = p[2] || 'overview'; wait(() => $('.main') && !$('.main .bx-set'), () => { if (tab === 'overview') put([() => dna(t)], $('.main'));  }); }
 }
 window.addEventListener('hashchange', () => setTimeout(route, 90)); setTimeout(route, 120);
 window.TWB2 = Object.assign({ dna, volglow, showcase, frame, host, SEC }, ALL);
