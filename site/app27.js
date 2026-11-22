@@ -115,7 +115,14 @@ function toolsCount() {
   $$('#app a[data-j]').forEach(a => { const sec = $('#r3-' + a.dataset.j); if (!sec) return; const k = new Set($$('.tt-tool', sec).map(c => c.getAttribute('href'))).size; let b = $('b.tw-jn', a); if (!b) { b = document.createElement('b'); b.className = 'tw-jn'; b.style.cssText = 'margin-left:6px;font-size:11px;padding:1px 7px;border-radius:999px;background:#F1F5F9;color:#475569'; a.appendChild(b); } b.textContent = k; });
   return true;
 }
-let tm = 0; const kick = () => { clearTimeout(tm); let n = 0; const go = () => { put(); toolsCount(); if (n++ < 12) tm = setTimeout(go, 700); }; tm = setTimeout(go, 400); };
+/* Brand stamp on every score ring (Zev, Nov 22, 2026): the Tickerwise logo as a seal on the ring plus a "TICKERWISE SCORE" label, so the circle always reads as our score. */
+const LOGO = s => `<svg viewBox="0 0 32 32" width="${s}" height="${s}" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#0B1B3F"/><rect x="6.5" y="13" width="4.5" height="11" rx="1.2" fill="#FF4D6D"/><rect x="13.75" y="9" width="4.5" height="15" rx="1.2" fill="#FFB020"/><rect x="21" y="5" width="4.5" height="19" rx="1.2" fill="#00C176"/></svg>`;
+function stamp() {
+  if (!$('#tw-stamp-css')) { const st = document.createElement('style'); st.id = 'tw-stamp-css'; st.textContent = `.ring.tw-st{position:relative;overflow:visible;margin-bottom:18px}.ring .tw-seal{position:absolute;right:-3px;bottom:-1px;line-height:0;border-radius:8px;box-shadow:0 0 0 2.5px #fff,0 3px 8px rgba(11,27,63,.25)}.ring .tw-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:6px;white-space:nowrap;font:800 9.5px/1 'Inter',sans-serif;letter-spacing:.09em;color:#0B1B3F}.ring .tw-lbl b{color:#00A862;font-weight:800}`; document.head.appendChild(st); }
+  $$('#app .ring:not(.tw-st)').forEach(r => { const w = r.offsetWidth; if (w < 60) return; r.classList.add('tw-st'); r.insertAdjacentHTML('beforeend', `<span class="tw-seal" title="Tickerwise Score">${LOGO(Math.round(w * 0.24))}</span><span class="tw-lbl">TICKER<b>WISE</b> SCORE</span>`); });
+}
+new MutationObserver(() => { clearTimeout(window.__twSt); window.__twSt = setTimeout(stamp, 120); }).observe(app, { childList: true, subtree: true });
+let tm = 0; const kick = () => { clearTimeout(tm); let n = 0; const go = () => { put(); toolsCount(); stamp(); if (n++ < 12) tm = setTimeout(go, 700); }; tm = setTimeout(go, 400); };
 window.addEventListener('hashchange', kick); kick();
 window.TWHOME = { movers, news, reorder };
 })();
