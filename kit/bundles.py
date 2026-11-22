@@ -106,7 +106,7 @@ if os.path.exists(_wp):
 _np = _D + 'nx.json' if os.path.exists(_D + 'nx.json') else os.path.join(_R, 'nx.json')
 if os.path.exists(_np):
     _n = json.load(open(_np)); _nn = _names | {'^GSPC'}
-    pub['NX'] = {k: ({t: v for t, v in _n[k].items() if t in _nn} if isinstance(_n.get(k), dict) and k not in ('d', 'NEWS') else _n.get(k)) for k in _n}
+    pub['NX'] = {k: ({t: v for t, v in _n[k].items() if t in _nn} if isinstance(_n.get(k), dict) and k not in ('d', 'NEWS', 'IX', 'TOP', 'SPE') else _n.get(k)) for k in _n}
 # price history for every stock in one identical format (kit/bp.py)
 if os.path.exists('/home/claude/tw2/data/twpx.json'):
     _px = json.load(open('/home/claude/tw2/data/twpx.json')); _px['T'] = {k: v for k, v in _px['T'].items() if k in {r[0] for r in rows}}; pub['PX'] = _px

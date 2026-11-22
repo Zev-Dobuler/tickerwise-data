@@ -8,6 +8,9 @@ python3 bp.py
 [ -f /home/claude/tw2/data/qs_raw.json ] && python3 qs.py
 [ -f /home/claude/tw2/data/zs_raw.json ] && python3 -c "import json,os;D='/home/claude/tw2/data/';R='$R/zs.json';o=json.load(open(D+'zstyle.json' if os.path.exists(D+'zstyle.json') else R)) if os.path.exists(D+'zstyle.json') or os.path.exists(R) else {'T':{}};n=json.load(open(D+'zs_raw.json'));o['T'].update(n['T']);o['read']=n['read'];json.dump(o,open(D+'zstyle.json','w'),separators=(',',':'))"
 python3 wh.py
+[ -f /home/claude/tw2/data/ix_raw.json ] && python3 ix.py
+[ -f /home/claude/tw2/data/top_raw.json ] && python3 top.py
+[ -f /home/claude/tw2/data/spe_raw.json ] && python3 -c "import json,os;D='/home/claude/tw2/data/';p=D+'nx_new.json';n=json.load(open(p)) if os.path.exists(p) else {};n['SPE']=json.load(open(D+'spe_raw.json'));json.dump(n,open(p,'w'),separators=(',',':'))"
 [ -f /home/claude/tw2/data/nx_new.json ] && python3 nx.py
 python3 qh.py
 python3 b1.py > /dev/null; python3 pk.py > /dev/null; python3 bx.py > /dev/null; python3 bm.py > /dev/null; python3 report.py > /dev/null
