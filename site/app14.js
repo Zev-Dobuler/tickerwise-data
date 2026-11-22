@@ -7,7 +7,7 @@ if (window.TWA) return;
 const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const X = window.TWX || {}, { BY, esc, nz, dfmt } = X, app = $('#app'); if (!app) return;
 const CID = '5883ec70-a62e-4258-806c-af065b13f4c9', API = 'https://www.wixapis.com', MK = 'tw_member', PK = 'tw_pkce';
-const KEYS = ['tw-watchlist', 'tw_paper', 'tw_alerts', 'tw_journal', 'tw_replay', 'tw_streak', 'tw_inv_follow', 'tw_follow', 'tw_xray', 'tw_comm', 'tw_ps', 'tw_groups', 'tw_leagues'];
+const KEYS = ['tw-watchlist', 'tw_paper', 'tw_alerts', 'tw_journal', 'tw_replay', 'tw_streak', 'tw_inv_follow', 'tw_follow', 'tw_xray', 'tw_comm', 'tw_ps', 'tw_groups', 'tw_leagues', 'tw_orders', 'tw_opts', 'tw_dash', 'tw_votes'];
 const jget = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const rand = n => b64u(crypto.getRandomValues(new Uint8Array(n)));
@@ -103,7 +103,7 @@ function menu(anchor) { const m = M(), r = anchor.getBoundingClientRect(), d = d
   document.body.appendChild(d); const close = e => { if (!d.contains(e.target)) { d.remove(); document.removeEventListener('click', close, true); } }; setTimeout(() => document.addEventListener('click', close, true), 0);
   $('[data-out]', d).onclick = () => { d.remove(); logout(); }; $('[data-sync]', d).onclick = async () => { d.remove(); await sync(); toast('✓ Synced'); }; }
 const av = m => `<span class="ta-av">${m.photo ? `<img src="${esc(m.photo)}" alt="">` : esc((m.nick || 'M').slice(0, 1).toUpperCase())}</span>`;
-function refreshUI() { const m = M(); $$('#tw-in').forEach(b => { if (b.closest('.tw-lock') || b.style.display === 'none') return; if (m) { if (!b.__mem) { b.__mem = 1; b.dataset.label = b.textContent; } b.innerHTML = `<span class="ta-chip">${av(m)}<span>${esc((m.nick || 'Account').split(' ')[0])}</span></span>`; } else if (b.__mem) { b.__mem = 0; b.textContent = b.dataset.label || 'Log In'; } }); }
+function refreshUI() { const m = M(); $$('#tw-in').forEach(b => { if (b.closest('.tw-lock') || b.style.display === 'none') return; if (m) { if (!b.__mem) { b.__mem = 1; b.dataset.label = b.textContent; } b.innerHTML = `<span class="ta-chip" title="${esc(m.nick || "My Account")}">${av(m)}</span>`; } else if (b.__mem) { b.__mem = 0; b.textContent = b.dataset.label || 'Log In'; } }); }
 window.addEventListener('click', e => {
   if (window.__twOwner) return; const b = e.target.closest('#tw-in, [data-login]'); if (!b || b.closest('.tw-lock')) return;
   e.preventDefault(); e.stopImmediatePropagation(); if (M()) { if (b.id === 'tw-in') menu(b); else location.hash = '#/account'; } else modal(b.dataset.login === 'in' ? 'in' : 'up');
