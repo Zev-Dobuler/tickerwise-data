@@ -43,6 +43,15 @@ const css = `
 @media(max-width:640px){#tw-mn .mn-cols{grid-template-columns:minmax(0,1fr);gap:8px}#tw-mn .mn-r{grid-template-columns:48px minmax(0,1fr) 60px 46px;font-size:13px}#tw-mn .card{padding:16px 14px 12px}}
 #tw-mn .nw-more{display:none;margin-top:10px}
 @media(max-width:900px){#tw-mn .nw-more{display:inline-flex}}
+#hm-journey a{position:relative;overflow:hidden;border:2px solid var(--jc)!important;box-shadow:0 10px 28px -14px var(--jc);transition:transform .2s,box-shadow .2s}
+#hm-journey a::before{content:'';position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--jc),var(--jc2))}
+#hm-journey a:hover{transform:translateY(-4px);box-shadow:0 18px 36px -14px var(--jc)}
+#hm-journey a .n{background:linear-gradient(135deg,var(--jc),var(--jc2));-webkit-background-clip:text;background-clip:text;color:transparent!important;opacity:1!important;font-weight:900}
+#hm-journey a > span:last-child{color:var(--jc)!important}
+#hm-journey a:nth-of-type(1){--jc:#2F6BFF;--jc2:#06B6D4}
+#hm-journey a:nth-of-type(2){--jc:#F59E0B;--jc2:#EF4444}
+#hm-journey a:nth-of-type(3){--jc:#7C3AED;--jc2:#EC4899}
+#hm-journey a:nth-of-type(4){--jc:#10B981;--jc2:#84CC16}
 #app > section.tq-sec{padding-bottom:16px}
 #app > section.tq-sec + section.sec{padding-top:44px !important}
 @media(max-width:640px){#app > section.tq-sec + section.sec{padding-top:32px !important}}`;
