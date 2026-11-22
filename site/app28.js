@@ -198,7 +198,7 @@ function view() {
   const arrow = k => { const i = ST.sort.findIndex(x => x[0] === k); return i < 0 ? '' : `<span class="ar">${ST.sort[i][1] > 0 ? '▲' : '▼'}${ST.sort.length > 1 ? i + 1 : ''}</span>`; };
   const M = mine();
   return `<div style="font:800 12px 'Inter',sans-serif;color:#64748B;letter-spacing:.06em;text-transform:uppercase;margin:18px 0 8px">Ready-made screens · click to load</div><div class="s2-pre">${PRE.map(p => `<button type="button" data-pre="${esc(p[0])}" title="${esc(p[1])}" class="${ST.pre === p[0] ? 'on' : ''}">${esc(p[0])} (${S.filter(s => { const o = ST.pre; ST.pre = p[0]; const r = pass(s); ST.pre = o; return r; }).length})</button>`).join('')}<button type="button" class="clr" data-clear>Clear all filters</button></div>
-    ${M.length ? `<div class="s2-mine"><span class="muted" style="font-size:12px;font-weight:700">My screens:</span>${M.map((m, i) => `<button type="button" data-load="${i}">${esc(m.n)}</button>`).join('')}</div>` : ''}
+    ${0 && M.length ? `<div class="s2-mine"><span class="muted" style="font-size:12px;font-weight:700">My screens:</span>${M.map((m, i) => `<button type="button" data-load="${i}">${esc(m.n)}</button>`).join('')}</div>` : ''}
     <div class="s2-top"><input id="s2q" placeholder="Search ticker, company or theme" value="${esc(ST.q)}">
       <select id="s2th"><option value="">All themes</option>${[...new Set(S.map(s => s.th))].sort().map(x => `<option ${x === ST.th ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <select id="s2sec"><option value="">All sectors</option>${[...new Set(S.map(s => s.sec))].sort().map(x => `<option ${x === ST.sec ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
@@ -206,7 +206,7 @@ function view() {
       <span class="s2-cnt">Showing <b>${L.length}</b> of ${S.length}</span></div>
     ${ST.open ? panel() : ''}
     <div class="s2-cols"><span class="l">Columns:</span>${GROUPS.map(gn => `<button type="button" data-grp="${esc(gn)}" class="${ST.hide.includes(gn) ? '' : 'on'}">${esc(gn)}</button>`).join('')}
-      <span style="margin-left:auto;display:flex;gap:6px"><input id="s2n" placeholder="Name this screen" style="height:30px;border:1px solid #E2E8F0;border-radius:8px;padding:0 8px;font-size:12.5px;width:150px"><button type="button" class="s2-btn" style="height:30px;font-size:12px" id="s2save">Save screen</button></span></div>
+      <span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="s2-btn" style="height:30px;font-size:12px" data-paid="Saved screens" data-paid-sub="Save your filters and sorts as named screens, synced to your account on every device.">🔒 Save screen</button></span></div>
     <div class="s2-wrap"><table><thead><tr class="gr"><th></th>${grp.map(([n, k]) => `<th colspan="${k}">${esc(n)}</th>`).join('')}</tr><tr><th data-k="t">Stock ${arrow('t')}</th>${vis.map(c => `<th data-k="${c[0]}">${esc(c[1])}${arrow(c[0])}</th>`).join('')}</tr></thead>
     <tbody>${L.map(s => `<tr><td><a href="#/stock/${esc(s.t)}">${esc(s.t)}</a><small>${esc(s.n)}</small></td>${vis.map(c => `<td>${c[4](c[3](s), s)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${vis.length + 1}" style="text-align:center;padding:30px" class="muted">No stocks pass every filter. Clear a filter to see more.</td></tr>`}</tbody></table></div>
     <p class="muted" style="font-size:12px;margin:10px 0 0">Click a column to sort; Shift+click adds a second sort level. Filters inside a box are "any of"; different boxes must all pass. Numbers in brackets show how many stocks each choice leaves. Data as of the ${esc(X.dfmt ? X.dfmt(TW.asof) : TW.asof || '')} close; scores, ratings and estimates from the same sources as each stock's page. Not investment advice.</p>`;
@@ -229,7 +229,7 @@ function wire(box) {
   $$('[data-grp]', box).forEach(b => b.onclick = () => { const v = b.dataset.grp; ST.hide = ST.hide.includes(v) ? ST.hide.filter(x => x !== v) : ST.hide.concat(v); save(); draw(); });
   $$('thead tr:not(.gr) th[data-k]', box).forEach(th => th.onclick = e => { const k = th.dataset.k, d0 = LOWFIRST.includes(k) || k === 't' ? 1 : -1, i = ST.sort.findIndex(x => x[0] === k);
     if (e.shiftKey) { if (i >= 0) ST.sort[i][1] *= -1; else ST.sort.push([k, d0]); ST.sort = ST.sort.slice(-3); } else ST.sort = i === 0 && ST.sort.length === 1 ? [[k, -ST.sort[0][1]]] : [[k, d0]]; save(); draw(); });
-  $('#s2save', box).onclick = () => { const n = ($('#s2n', box).value || '').trim() || 'My screen ' + (mine().length + 1), M = mine(); M.push({ n, st: { q: ST.q, th: ST.th, sec: ST.sec, f: ST.f, cons: ST.cons, acc: ST.acc, pre: ST.pre, sort: ST.sort } }); try { localStorage.setItem('tw_scr2_saved', JSON.stringify(M.slice(-12))); } catch (e) {} draw(); };
+  if ($('#s2save', box)) $('#s2save', box).onclick = () => { const n = ($('#s2n', box).value || '').trim() || 'My screen ' + (mine().length + 1), M = mine(); M.push({ n, st: { q: ST.q, th: ST.th, sec: ST.sec, f: ST.f, cons: ST.cons, acc: ST.acc, pre: ST.pre, sort: ST.sort } }); try { localStorage.setItem('tw_scr2_saved', JSON.stringify(M.slice(-12))); } catch (e) {} draw(); };
   $$('[data-load]', box).forEach(b => b.onclick = () => { const m = mine()[+b.dataset.load]; if (m) { Object.assign(ST, JSON.parse(JSON.stringify(m.st))); draw(); } });
 }
 function mount() {

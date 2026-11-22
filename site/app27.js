@@ -129,5 +129,25 @@ function stamp() {
 new MutationObserver(() => { clearTimeout(window.__twSt); window.__twSt = setTimeout(stamp, 120); }).observe(app, { childList: true, subtree: true });
 let tm = 0; const kick = () => { clearTimeout(tm); let n = 0; const go = () => { put(); toolsCount(); stamp(); if (n++ < 12) tm = setTimeout(go, 700); }; tm = setTimeout(go, 400); };
 window.addEventListener('hashchange', kick); kick();
+/* Paid-plan pop-up for any feature that needs the backend (Zev, Nov 22, 2026: nothing should look broken; it should say it's in the paid plan).
+   Use window.twPaid('Feature name', 'one line on what it does') or put data-paid="Feature name" on any button or link. */
+window.twPaid = (what, sub) => {
+  if (!$('#tw-pm-css')) { const st = document.createElement('style'); st.id = 'tw-pm-css'; st.textContent = `.tw-pm{position:fixed;inset:0;background:rgba(11,27,63,.55);display:grid;place-items:center;z-index:9999;padding:16px;animation:twpmf .15s ease}
+.tw-pm .b{background:#fff;border-radius:20px;max-width:430px;width:100%;padding:26px 24px 22px;box-shadow:0 30px 80px -20px rgba(11,27,63,.5);text-align:center}
+.tw-pm .lk{width:58px;height:58px;border-radius:18px;margin:0 auto 12px;display:grid;place-items:center;background:linear-gradient(135deg,#7C3AED,#2F6BFF);color:#fff}
+.tw-pm h3{margin:0 0 6px;font:700 21px 'Space Grotesk',sans-serif;color:#0B1B3F}.tw-pm p{margin:0 0 16px;color:#475569;font-size:14.5px;line-height:1.55}
+.tw-pm .tw-up{margin-bottom:10px}.tw-pm a.go{display:block;padding:12px;border-radius:12px;background:linear-gradient(120deg,#4C1D95,#7C3AED);color:#fff;font:700 15px Inter,sans-serif;text-decoration:none;margin-bottom:8px}
+.tw-pm button{border:0;background:none;color:#64748B;font:600 13.5px Inter,sans-serif;cursor:pointer;padding:6px}@keyframes twpmf{from{opacity:0}}`; document.head.appendChild(st); }
+  $$('.tw-pm').forEach(x => x.remove());
+  const m = document.createElement('div'); m.className = 'tw-pm';
+  m.innerHTML = `<div class="b" role="dialog" aria-modal="true"><div class="lk"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><span class="tw-up">Upgraded Plan</span>
+    <h3>${esc(what || 'This feature')} is part of the paid plan</h3><p>${esc(sub || 'Upgrade to unlock it, along with AI analysis, alerts, saved screens and more.')}</p>
+    <a class="go" href="#/plans">See plans and prices</a><button type="button">Maybe later</button></div>`;
+  const close = () => m.remove(); m.onclick = e => { if (e.target === m || e.target.tagName === 'BUTTON' || e.target.classList.contains('go')) close(); };
+  document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
+  document.body.appendChild(m);
+};
+document.addEventListener('click', e => { const p = e.target.closest('[data-pro] .pro-btn'); if (p) { e.preventDefault(); e.stopPropagation(); const box = p.closest('[data-pro]'), b = box.querySelector('.pro-tx b'); window.twPaid(box.dataset.what || (b ? b.childNodes[0].textContent.trim() : 'This feature'), (box.querySelector('.pro-tx > span') || {}).textContent); } }, true);
+document.addEventListener('click', e => { const t = e.target.closest('[data-paid]'); if (!t) return; e.preventDefault(); e.stopPropagation(); window.twPaid(t.dataset.paid, t.dataset.paidSub); }, true);
 window.TWHOME = { movers, news, reorder };
 })();
