@@ -94,7 +94,7 @@ function put() {
   if (!$('#app section.hero')) return false;
   const hh = $('#app section.hero h1'), hl = $('#app section.hero p.lead');
   if (hh && !hh.dataset.tw) { hh.dataset.tw = 1; hh.innerHTML = 'Stop guessing.<br>Start <em>knowing</em>.'; }
-  if (hl && !hl.dataset.tw) { hl.dataset.tw = 1; hl.textContent = 'Every stock scored 1–10, the way the pros size up a stock. One score, five reasons, no noise.'; }
+  if (hl && !hl.dataset.tw) { hl.dataset.tw = 1; hl.innerHTML = '<b style="color:#fff">Tickerwise</b> scores every stock 1–10, the way the pros size up a stock. One score, five reasons, no noise.'; }
   if (!$('#tw-mn-css')) { const st = document.createElement('style'); st.id = 'tw-mn-css'; st.textContent = css; document.head.appendChild(st); }
   if (!$('#tw-mn') && (IX || TOPN)) { const sec = document.createElement('section'); sec.className = 'sec'; sec.id = 'tw-mn'; sec.style.paddingTop = '18px'; draw(sec); $('#app section.hero').after(sec); }
   const pt = $$('#x-pulse a, #x-pulse .it, #x-pulse div').find(e => e.children.length && /S&P 500 Forward P\/E/.test(e.textContent) && e.textContent.length < 90);
