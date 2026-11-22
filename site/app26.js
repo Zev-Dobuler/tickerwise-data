@@ -72,7 +72,6 @@ function build() {
     <div class="pe-g pe-x">${xs}</div>
     <div class="pe-g pe-grp"><div style="border-color:#F28C28;color:#C2410C">Now</div><div style="grid-column:span 5;border-color:#2F6BFF;color:#2F6BFF">Average over the last…</div><div></div><div style="grid-column:span 5;border-color:#0EA5A0;color:#0E7490">Average during…</div></div>
     <p class="muted" style="font-size:12px;margin:8px 0 0">Under each column: how today compares. <span class="up">Green</span> = today is cheaper than that time frame, <span class="dn">red</span> = pricier.</p>
-    <table class="pe-tbl"><thead><tr><th>Time frame</th><th class="n">Forward P/E</th><th class="n">Today is…</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="pe-src">Source: <a href="https://www.factset.com/earningsinsight" target="_blank" rel="noopener">FactSet Earnings Insight</a>. Today, 5- and 10-year averages: Nov 20, 2026 report. 15-, 20- and 25-year averages and the 2008 low: FactSet, as of Nov 5, 2026. 2016–20 and 2021–25: FactSet's 5-year averages in its Dec 18, 2020 and Dec 12, 2025 reports. 2011–15 and 2007–11 are worked out from FactSet's 5- and 10-year averages (Dec 2020 and Dec 2016 reports). 2002–06 is worked out from the 20- and 25-year averages, so it is approximate (±0.5).</p>
   </div></div>`;
   return sec;
