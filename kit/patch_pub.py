@@ -13,7 +13,7 @@ for k in keys:
     nx[k] = new[k]; nx.setdefault('d', {})[k] = today
     pub.setdefault('NX', {})[k] = new[k]; pub['NX'].setdefault('d', {})[k] = today
 json.dump(nx, open(os.path.join(R, 'nx.json'), 'w'), separators=(',', ':'))
-with gzip.open(os.path.join(R, 'pub.json.gz'), 'wb', mtime=0) as f: f.write(json.dumps(pub, separators=(',', ':'), ensure_ascii=False).encode())
+open(os.path.join(R, 'pub.json.gz'), 'wb').write(gzip.compress(json.dumps(pub, separators=(',', ':'), ensure_ascii=False).encode(), mtime=0))
 for w in ('Holdings Value', '% Holdings', 'Purchase Price', 'Shares Owned'): assert w not in json.dumps(pub), w
 g = ['git', '-C', R, '-c', 'user.email=claude@anthropic.com', '-c', 'user.name=Claude']
 subprocess.run(g + ['add', 'nx.json', 'pub.json.gz'], check=True)
