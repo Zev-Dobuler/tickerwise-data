@@ -36,6 +36,7 @@ const usd = (m, r) => { const k = kind(r[1]), h = m.H.find(x => x[0] === r[0]), 
   let d = 0; if (k === 'new') d = h[4]; else if (k === 'add' && x > 0) d = h[4] - h[4] / (1 + x / 100); else if (k === 'cut' && x > 0 && x < 100) d = h[4] / (1 - x / 100) - h[4]; return d * h[5]; };
 const ACT = {}; INV.forEach(m => (m.A[Q] || []).forEach(r => { const k = kind(r[1]); const o = ACT[r[0]] = ACT[r[0]] || { t: r[0], buy: [], sell: [], imp: 0, bv: 0, sv: 0 }; if (k === 'new' || k === 'add') { o.buy.push([m, r]); o.imp += r[3] || 0; o.bv += usd(m, r); } else if (k) { o.sell.push([m, r]); o.imp -= r[3] || 0; o.sv += usd(m, r); } }));
 Object.values(ACT).forEach(o => { o.net = o.bv - o.sv; });
+const rankIn = (m, t) => m.H.findIndex(h => h[0] === t) + 1;
 const nameOf = t => (OWN[t] || {}).n || ((BY[t] || {}).n) || '';
 
 const css = document.createElement('style'); css.id = 'fi-css'; css.textContent = `
@@ -43,7 +44,9 @@ const css = document.createElement('style'); css.id = 'fi-css'; css.textContent 
 .fi-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 .fi-c{display:flex;flex-direction:column;gap:10px;border:1.5px solid var(--line);border-radius:18px;padding:16px;background:#fff;text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s,border-color .2s;min-width:0}
 .fi-c:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(11,27,63,.12);border-color:#2F6BFF}
-.fi-h{display:flex;gap:12px;align-items:center;min-width:0}.fi-h b{display:block;font:700 17px 'Space Grotesk',sans-serif}.fi-h span{font-size:12.5px;color:var(--mut)}
+.fi-h{display:flex;gap:12px;align-items:center;min-width:0}.fi-h b{display:block;font:700 17px 'Space Grotesk',sans-serif}.fi-h span{font-size:12.5px;color:var(--mut)}.fi-h .fi-mono,.fi-mono{color:#fff}
+.fi-hit{display:flex;justify-content:space-between;gap:8px;align-items:center;background:linear-gradient(90deg,#FFF7E0,#FFFBEF);border:1.5px solid #F5C451;border-radius:12px;padding:8px 12px;font-size:13.5px}.fi-hit b{font:800 16px 'Space Grotesk',sans-serif}
+.fi-sum{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border-radius:14px;padding:12px 16px;background:#0B1B3F;color:#E6F0FF;font-size:14px}.fi-sum a{color:#7FE3FF;font-weight:700}
 .fi-st{display:inline-block;font:700 11px Inter,sans-serif;padding:3px 8px;border-radius:999px;background:#EEF4FF;color:#1E4FD8;margin-left:auto;white-space:nowrap}
 .fi-st.Activist{background:#FFF1E6;color:#B45309}.fi-st.Quality{background:#E7F8EF;color:#00794A}.fi-st.Growth{background:#F2EDFF;color:#5B2FD6}.fi-st.Hedge{background:#E6F6FD;color:#0369A1}.fi-st.Foundation{background:#F1F5F9;color:#334155}.fi-st.Contrarian{background:#FDECEF;color:#B4233A}
 .fi-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.fi-k div{background:#F7F9FC;border-radius:10px;padding:7px 9px;min-width:0}.fi-k span{display:block;font-size:11px;color:var(--mut);font-weight:600}.fi-k b{font:800 16px 'Space Grotesk',sans-serif}
@@ -132,9 +135,14 @@ function directory() {
       const tb = (L, buy) => `<div class="tbl-wrap" style="max-height:none"><table class="fi-tb"><thead><tr><th>#</th><th>Stock</th><th class="num">Bought</th><th class="num">Sold</th><th class="num">Net</th><th>Investors</th></tr></thead><tbody>${L.map((o, i) => `<tr><td class="muted">${i + 1}</td><td>${stockLink(o.t)} <span class="muted">${esc(nameOf(o.t).slice(0, 18))}</span></td><td class="num up">${o.bv ? bn(o.bv) : '—'}</td><td class="num dn">${o.sv ? bn(o.sv) : '—'}</td><td class="num"><b class="${buy ? 'up' : 'dn'}">${(buy ? '+' : '−') + bn(Math.abs(o.net))}</b></td><td><span class="muted" style="font-size:12px">${o.buy.length} buying · ${o.sell.length} selling</span></td></tr>`).join('')}</tbody></table></div>`;
       return card('Net Money Flow In ' + esc(Q), 'dollars bought minus dollars sold, so each stock appears only once', `<div class="fi-2"><div><b style="font-size:14px">🟢 Biggest net buys</b>${tb(nb, 1)}</div><div><b style="font-size:14px">🔴 Biggest net sells</b>${tb(ns, 0)}</div></div><p class="muted" style="font-size:12px;margin:8px 0 0">Estimated from each filing: share change × the stock's price on ${esc(INV[0].date)}. Full exits use the position's last reported weight × portfolio value. Across all ${INV.length} famous investors.</p>`); })()}
     ${note}`);
-  const grid = () => { const q = QS.trim().toLowerCase(), key = { val: m => m.val, since: m => nz(m.since) ? m.since : -999, moves: m => m.moves, top10: m => m.top10, name: m => 0 }[SO];
-    let L = INV.filter(m => (ST === 'All' || m.style === ST) && (!q || (m.name + ' ' + m.firm).toLowerCase().includes(q) || m.H.some(h => h[0].toLowerCase() === q)));
-    L = SO === 'name' ? L.sort((a, b) => a.name.localeCompare(b.name)) : L.sort((a, b) => key(b) - key(a)); $('#fi-grid').innerHTML = L.map(invCard).join('') || '<p class="muted">No investors match.</p>'; };
+  const grid = () => { const q = QS.trim().toLowerCase(), T = q.toUpperCase(), tk = OWN[T] || ACT[T] ? T : null, key = { val: m => m.val, since: m => nz(m.since) ? m.since : -999, moves: m => m.moves, top10: m => m.top10, name: m => 0 }[SO];
+    const pos = m => m.H.find(h => h[0] === tk), mvOf = m => (m.A[Q] || []).find(r => r[0] === tk);
+    let L = INV.filter(m => (ST === 'All' || m.style === ST) && (!q || (m.name + ' ' + m.firm).toLowerCase().includes(q) || (tk && (pos(m) || mvOf(m)))));
+    if (tk) L.sort((a, b) => ((pos(b) || [0, 0, -1])[2]) - ((pos(a) || [0, 0, -1])[2])); else L = SO === 'name' ? L.sort((a, b) => a.name.localeCompare(b.name)) : L.sort((a, b) => key(b) - key(a));
+    const hit = m => { const h = pos(m), r = mvOf(m); return `<div class="fi-hit"><span>${esc(tk)}: <b>${h ? h[2].toFixed(2) + '%' : 'sold'}</b> ${h ? 'of portfolio · #' + rankIn(m, tk) + ' holding' : 'out in ' + esc(Q)}</span>${r ? `<span class="fi-b ${kind(r[1])}">${esc(/^Buy/.test(r[1]) ? 'New' : r[1].replace(/^Reduce/, 'Trimmed').replace(/^Add/, 'Added').replace(/^Sell.*/, 'Sold out'))}</span>` : '<span class="muted" style="font-size:12px;white-space:nowrap">No change</span>'}</div>`; };
+    const a = tk ? (ACT[tk] || { net: 0, bv: 0, sv: 0 }) : null, own = tk && OWN[tk] ? OWN[tk].who.length : 0;
+    $('#fi-grid').innerHTML = (tk ? `<div class="fi-sum" style="grid-column:1/-1"><span><b style="color:#fff">${esc(tk)}</b> ${esc(nameOf(tk))} · owned by <b style="color:#fff">${own}</b> of ${INV.length} famous investors${a.net ? ' · net ' + (a.net > 0 ? 'buying +' : 'selling −') + bn(Math.abs(a.net)) + ' in ' + esc(Q) : ''}</span><a href="${BY[tk] ? '#/stock/' + esc(tk) + '/famous' : '#/investors/stock/' + esc(tk)}">Full ${esc(tk)} owners page →</a></div>` : '')
+      + (L.map(m => tk ? invCard(m).replace('<div class="fi-k">', hit(m) + '<div class="fi-k">') : invCard(m)).join('') || '<p class="muted">No investors match.</p>'); };
   grid(); $('#fi-q').oninput = e => { QS = e.target.value; grid(); };
   $$('[data-st]').forEach(b => b.onclick = () => { ST = b.dataset.st; $$('[data-st]').forEach(x => x.classList.toggle('on', x === b)); grid(); });
   $$('[data-so]').forEach(b => b.onclick = () => { SO = b.dataset.so; $$('[data-so]').forEach(x => x.classList.toggle('on', x === b)); grid(); });
@@ -193,7 +201,6 @@ function homeTeaser() {
 
 
 /* ---------- stock page: Famous Investors tab ---------- */
-const rankIn = (m, t) => m.H.findIndex(h => h[0] === t) + 1;
 function famousTab(t) {
   const o = OWN[t], a = ACT[t] || { buy: [], sell: [], bv: 0, sv: 0, net: 0 }, rows = o ? o.who.map(m => { const h = m.H.find(x => x[0] === t), r = (m.A[Q] || []).find(x => x[0] === t), r2 = QP ? (m.A[QP] || []).find(x => x[0] === t) : null; return { m, h, r, r2, val: h[4] * (h[5] || 0) }; }).sort((x, y) => y.h[2] - x.h[2]) : [];
   const exits = a.sell.filter(x => /^Sell/.test(x[1][1])), nb = a.buy.length, ns = a.sell.length, tot = rows.reduce((x, r) => x + r.val, 0), nm = nameOf(t);
