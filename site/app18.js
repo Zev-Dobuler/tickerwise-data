@@ -373,7 +373,7 @@ const ALL = { weather, galaxy, globe, river, race, flap, city, ripple, terrain, 
 function put(list, where, how) { if (!where) return; const box = document.createElement('div'); box.className = 'bx-set'; box.style.cssText = 'display:flex;flex-direction:column;gap:18px'; list.forEach(f => { try { const e = f(); if (e) box.appendChild(e); } catch (er) { if (window.console) console.error(er); } }); if (box.children.length) where[how || 'prepend'](box); }
 function showcase() {
   app.innerHTML = `<section class="page-h"><div class="wrap"><h1>Motion Gallery</h1><p>All 20 live data banners in one place. Every one is drawn in real time from real Tickerwise data.</p></div></section><section class="sec" style="padding-top:22px"><div class="wrap bx-gal" id="bx-gal"></div></section>`; document.title = 'Motion Gallery — Tickerwise';
-  const gal = $('#bx-gal'), T = BY.NVDA ? 'NVDA' : S[0].t; [['Market Weather', weather], ['Market Globe', globe], ['Money River', river], ['Bar Chart Race', race], ['Departures Board', flap], ['Market City', city], ['Earnings Ripple Pond', ripple], ['Terrain Flyover', terrain], ['Score DNA', () => dna(T)], ['Data Rain', rain], ['Market Aurora', aurora], ['Volume Glow', () => volglow(T)]].forEach(([n, f], i) => { const h = document.createElement('h4'); h.textContent = (i + 1) + '. ' + n; gal.appendChild(h); try { const e = f(); if (e) gal.appendChild(e); } catch (er) { if (window.console) console.error(er); } });
+  const gal = $('#bx-gal'), T = BY.NVDA ? 'NVDA' : S[0].t; [['Market Weather', weather], ['Market Globe', globe], ['Money River', river], ['Bar Chart Race', race], ['Market City', city], ['Earnings Ripple Pond', ripple], ['Terrain Flyover', terrain], ['Score DNA', () => dna(T)], ['Data Rain', rain], ['Market Aurora', aurora], ['Volume Glow', () => volglow(T)]].forEach(([n, f], i) => { const h = document.createElement('h4'); h.textContent = (i + 1) + '. ' + n; gal.appendChild(h); try { const e = f(); if (e) gal.appendChild(e); } catch (er) { if (window.console) console.error(er); } });
 }
 const done = new Set();
 function route() {
@@ -381,7 +381,6 @@ function route() {
   if (k === 'showcase') { showcase(); window.scrollTo(0, 0); return; }
   let n = 0; const wait = (ok, fn) => { const go = () => { if (ok()) fn(); else if (n++ < 40) setTimeout(go, 200); }; setTimeout(go, 500); };
   const W = () => !$('#app .bx-set') && $('#app .sec .wrap'), first = () => $('#app .sec .wrap');
-  if (k === 'home') wait(() => !$('#app .bx-set') && $('#app section:nth-of-type(2)'), () => { const s2 = $('#app section:nth-of-type(2)'), sec = document.createElement('section'); sec.className = 'sec'; sec.style.paddingTop = '18px'; sec.innerHTML = '<div class="wrap"></div>'; s2.before(sec); put([flap], sec.firstChild, 'append'); });
   const map = { markets: [weather, globe, terrain], investors: [river], signals: [rain], dashboard: [city], calendar: [ripple], briefing: [ripple], community: [aurora], learn: [] };
   if (k === 'tools') wait(() => $('#app .tt-g') && !$('#bx-tt'), () => $('#app .tt-g').insertAdjacentHTML('beforeend', '<a class="tt-tool" id="bx-tt" href="#/showcase"><em>New</em><i>✨</i><b>Motion Gallery</b><span>All 20 live data banners in one place.</span></a>'));
   if (map[k] && !(k === 'investors' && p[1]) && !(k === 'paper' && p[1])) wait(W, () => put(map[k], first()));
