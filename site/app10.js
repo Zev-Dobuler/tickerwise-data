@@ -134,7 +134,7 @@ window.addEventListener('hashchange', () => setTimeout(route, 20)); route();
 window.TWCM = { posts, sentiment };
 })();
 /* load later modules (site/app11.js …) from the same GitHub commit as the rest of the site */
-(function () { if (window.__twMore) return; window.__twMore = 1; const FILES = ['site/app11.js', 'site/app12.js', 'site/app13.js', 'site/app14.js', 'site/app15.js'];
+(function () { if (window.__twMore) return; window.__twMore = 1; const FILES = ['site/app11.js', 'site/app12.js', 'site/app13.js', 'site/app14.js', 'site/app15.js', 'site/app16.js'];
   const base = window.TW_BASE != null ? Promise.resolve(window.TW_BASE) : fetch('https://api.github.com/repos/Zev-Dobuler/tickerwise-data/commits/main', { headers: { Accept: 'application/vnd.github.sha' }, cache: 'no-store' })
     .then(r => r.ok ? r.text() : '').then(s => 'https://raw.githubusercontent.com/Zev-Dobuler/tickerwise-data/' + (/^[0-9a-f]{40}$/.test(s.trim()) ? s.trim() : 'main') + '/').catch(() => 'https://raw.githubusercontent.com/Zev-Dobuler/tickerwise-data/main/');
   FILES.reduce((p, f) => p.then(() => base.then(b => fetch(b + f + (b ? '?t=' + Date.now() : ''), { cache: 'no-store' })).then(r => r.ok ? r.text() : '').then(x => { if (!x) return; const s = document.createElement('script'); s.textContent = x; document.body.appendChild(s); }).catch(() => {})), Promise.resolve());
