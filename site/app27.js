@@ -86,7 +86,21 @@ function put() {
   if (pt && NX.SPE && NX.SPE.v) { const w = document.createTreeWalker(pt, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (/^\s*\d+(\.\d)?x\s*$/.test(n.nodeValue)) { n.nodeValue = (+NX.SPE.v).toFixed(1) + 'x'; break; } }
   reorder(); return true;
 }
-let tm = 0; const kick = () => { clearTimeout(tm); let n = 0; const go = () => { put(); if (n++ < 12) tm = setTimeout(go, 700); }; tm = setTimeout(go, 400); };
+/* Tools page: live tool count on top (counts the cards, so it updates itself as tools are added) and a count on each section chip. */
+function toolsCount() {
+  if (!/^#\/tools\/?$/.test(location.hash)) return true; const cards = $$('#app .tt-tool'); if (!cards.length) return false;
+  const HOME = { '#/bots': 'analyze', '#/chartdesk': 'analyze', '#/insider-buys': 'analyze', '#/fund-buying': 'analyze', '#/etf-finder': 'analyze', '#/target-tracker': 'analyze', '#/ai-finder': 'analyze', '#/theses': 'track', '#/mynews': 'track', '#/risk-scan': 'track' }, SECS = ['analyze', 'learn', 'play', 'track', 'community'];
+  cards.forEach(c => { if (SECS.some(k => c.closest('#r3-' + k))) return; const k = HOME[c.getAttribute('href')] || 'analyze', g = $('#r3-' + k + ' .tt-g'); if (g) g.appendChild(c); });
+  $$('#app .tt-g').forEach(g => { if (!g.children.length && !SECS.some(k => g.closest('#r3-' + k))) g.remove(); });
+  SECS.forEach(k => { const sec = $('#r3-' + k); if (!sec) return; const m = new Set($$('.tt-tool', sec).map(c => c.getAttribute('href'))).size, hd = $('h2, h3', sec); if (hd) { const w = document.createTreeWalker(hd, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) if (/·\s*\d+/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/·\s*\d+/, '· ' + m); } });
+  const n = new Set(cards.map(c => c.getAttribute('href'))).size, h1 = $('.page-h h1');
+  if (h1 && !$('#tw-tcount')) h1.insertAdjacentHTML('beforeend', ` <span id="tw-tcount" style="display:inline-flex;align-items:center;vertical-align:middle;margin-left:10px;padding:5px 12px;border-radius:999px;background:#EEF2FF;color:#2F6BFF;font:800 15px 'Inter',sans-serif">${n} tools</span>`);
+  else if ($('#tw-tcount')) $('#tw-tcount').textContent = n + ' tools';
+  const p = $('.page-h p'); if (p && p.dataset.tw != n) { p.dataset.tw = n; p.textContent = n + ' everyday tools for serious investors, in 5 sections: Analyze, Learn, Play, Track and Community. Jump to a section below or search for a tool.'; }
+  $$('#app a[data-j]').forEach(a => { const sec = $('#r3-' + a.dataset.j); if (!sec) return; const k = new Set($$('.tt-tool', sec).map(c => c.getAttribute('href'))).size; let b = $('b.tw-jn', a); if (!b) { b = document.createElement('b'); b.className = 'tw-jn'; b.style.cssText = 'margin-left:6px;font-size:11px;padding:1px 7px;border-radius:999px;background:#F1F5F9;color:#475569'; a.appendChild(b); } b.textContent = k; });
+  return true;
+}
+let tm = 0; const kick = () => { clearTimeout(tm); let n = 0; const go = () => { put(); toolsCount(); if (n++ < 12) tm = setTimeout(go, 700); }; tm = setTimeout(go, 400); };
 window.addEventListener('hashchange', kick); kick();
 window.TWHOME = { movers, news, reorder };
 })();
