@@ -3,6 +3,19 @@
    (document.body.innerHTML='<main><article><pre id=o></pre></article></main>'; o.textContent=__OUT.slice(i*45000,(i+1)*45000)).
    Collect the outputs into /home/claude/tw2/data/nx_new.json as {read:'YYYY-MM-DD', SEA:{}, SEG:{}, SI:{}, CG:{}, ETF:{}, TH:{}, NEWS:{A,T}, CALL:{}} and run kit/nx.py (run.sh does).
    Same fields for every stock: holdings and wish list are pulled identically.
+   ALSO EVERY RUN (added Nov 22, 2026, for the home page Market Movers, the Market Heatmap index tabs, Latest News and the S&P 500 forward P/E card):
+   (1) INDEX UNIVERSE: follow the header of kit/ix.js (pullIX on a stockanalysis.com tab, then pullIXR on a finance.yahoo.com tab) and save
+       /home/claude/tw2/data/ix_raw.json and ixr_raw.json. run.sh merges them (kit/ix.py).
+   (2) LATEST NEWS: write /home/claude/tw2/data/top_raw.json = {"read": "<NY trading date>", "A": [[headline, source name, source URL, unix time of the source's publication], ...]}
+       with the 15 to 20 most market-moving US stories of the last 24 hours (markets, Fed and rates, economic data, big company news, earnings, deals),
+       newest first, from this run's own research plus a few web searches. LEGAL RULES (Zev, Nov 22, 2026: only content we are allowed to use):
+       every headline is written in Tickerwise's own words (at most 14 words, facts only, no quotes, never a publisher's headline copied or lightly edited),
+       never any article text, summary paragraphs or photos; each item links to the original source and names it. Prefer primary and official
+       sources when they exist (federalreserve.gov, bls.gov, bea.gov, sec.gov, treasury.gov, the company's own press release or investor-relations page).
+       No lifestyle, personal-finance advice columns or opinion pieces. run.sh adds stock tags (kit/top.py).
+   (3) S&P 500 FORWARD P/E: from the newest FactSet Earnings Insight (the macro step already reads it) write /home/claude/tw2/data/spe_raw.json =
+       {"v": forward 12-month P/E, "d": "<report date YYYY-MM-DD>", "a5": 5-year average, "a10": 10-year average, "src": "FactSet Earnings Insight, <Mon D, YYYY>"}.
+       Use FactSet's exact published numbers; if the report can't be read, skip the file (the site keeps last week's numbers).
    Cadence: SEA (Yahoo) weekly; SI (Dataroma) and SEG (stockanalysis) weekly on Mondays; CG (Quiver), ETF (etfdb) and TH (MarketBeat) nightly. NEWS and CALL (Yahoo Finance) nightly. */
 
 const sl = ms => new Promise(r => setTimeout(r, ms));

@@ -1,5 +1,5 @@
 /* Tickerwise index universe (Nov 22, 2026): every S&P 500, Nasdaq-100 and Dow 30 stock, for the Market Heatmap index tabs and Home Market Movers.
-   Two steps, each fire-and-forget like kit/nx.js (start it, poll window.__done / window.__total, read window.__OUT with get_page_text in <=45K slices):
+   Run every night (see kit/nx.js header). Two steps, each fire-and-forget like kit/nx.js (start it, poll window.__done / window.__total, read window.__OUT with get_page_text in <=45K slices):
    1. On a stockanalysis.com tab: pullIX() -> {read, T:{sym:[name, sector, marketCap $B, index bits (1 = S&P 500, 2 = Nasdaq-100, 4 = Dow 30), 1-day %]}}.
       Save as /home/claude/tw2/data/ix_raw.json.
    2. On a finance.yahoo.com tab: set window.IXT = Object.keys(ix_raw.T), then pullIXR() -> {sym:[1W %, 1M %, 3M %, YTD %, 1Y %]} (daily closes, 1 year).
