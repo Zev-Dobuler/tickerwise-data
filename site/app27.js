@@ -79,8 +79,8 @@ function news() {
 function draw(sec) { const m = movers(), n = news(); sec.innerHTML = `<div class="wrap"><div class="mn-g${m && n ? '' : ' solo'}">${m}${n}</div></div>`;
   $$('[data-i]', sec).forEach(b => b.onclick = () => { mvI = b.dataset.i; draw(sec); }); $$('[data-p]', sec).forEach(b => b.onclick = () => { mvP = b.dataset.p; draw(sec); });
   const mb = $('.nw-more', sec); if (mb) mb.onclick = () => { $('.nw-list', sec).classList.add('open'); mb.remove(); }; }
-/* Home order: today's market → valuation → ideas → how the score works → explore → learn and follow → practice and community → plans. */
-const ORDER = [['section.hero'], ['#x-pulse'], ['#tw-mn'], ['#spx-pe', 1], ['#r2-hsotd'], ['h2|Highest Tickerwise Scores'], ['h2|One score, five reasons'], ['h2|Momentum Leaders'], ['.tq-sec'], ['h2|Explore by Theme'], ['#ai-box', 1], ['#hm-journey'], ['#hm-ins'], ['#hm-inv'], ['#r5-poll', 1], ['#hm-social'], ['#hm-paper'], ['*'], ['#r3-had'], ['#hm-plans'], ['h2|Build your watchlist']];
+/* Home order (Zev, Nov 22, 2026: what makes Tickerwise unique goes first): scores → how they work → the journey → famous investors → social → paper trading, then today's market (pulse, movers + news, P/E, stock of the day), then momentum, themes, AI, insights, poll, plans. */
+const ORDER = [['section.hero'], ['h2|Highest Tickerwise Scores'], ['h2|One score, five reasons'], ['#hm-journey'], ['#hm-inv'], ['#hm-social'], ['#hm-paper'], ['#x-pulse'], ['#tw-mn'], ['#spx-pe', 1], ['#r2-hsotd'], ['h2|Momentum Leaders'], ['.tq-sec'], ['h2|Explore by Theme'], ['#ai-box', 1], ['#hm-ins'], ['#r5-poll', 1], ['*'], ['#r3-had'], ['#hm-plans'], ['h2|Build your watchlist']];
 function secOf(sel, up) { if (sel.startsWith('h2|')) { const h = $$('#app > section h2, #app > section h3').find(x => x.textContent.includes(sel.slice(3))); return h ? h.closest('#app > section') : null; } const e = $('#app ' + sel); return e ? (up ? e.closest('#app > section') : e) : null; }
 function reorder() {
   const all = $$('#app > section'), placed = new Set(), seq = [];
@@ -93,7 +93,7 @@ function put() {
   const k = location.hash.replace(/^#\/?/, '').split(/[/?#]/)[0] || 'home'; if (k !== 'home') return true;
   if (!$('#app section.hero')) return false;
   const hh = $('#app section.hero h1'), hl = $('#app section.hero p.lead');
-  if (hh && !hh.dataset.tw) { hh.dataset.tw = 1; hh.innerHTML = 'Stop guessing. Start <em>knowing</em>.'; }
+  if (hh && !hh.dataset.tw) { hh.dataset.tw = 1; hh.innerHTML = 'Stop guessing.<br>Start <em>knowing</em>.'; }
   if (hl && !hl.dataset.tw) { hl.dataset.tw = 1; hl.textContent = 'Every stock scored 1–10, the way the pros size up a stock. One score, five reasons, no noise.'; }
   if (!$('#tw-mn-css')) { const st = document.createElement('style'); st.id = 'tw-mn-css'; st.textContent = css; document.head.appendChild(st); }
   if (!$('#tw-mn') && (IX || TOPN)) { const sec = document.createElement('section'); sec.className = 'sec'; sec.id = 'tw-mn'; sec.style.paddingTop = '18px'; draw(sec); $('#app section.hero').after(sec); }
