@@ -15,7 +15,12 @@ wx = {}
 for r in L('wishx'):
     if r.get('ticker') and r.get('k') not in ('dl',): wx.setdefault(r['ticker'], {})[r['k']] = r
 gw = {r['t']: r for r in json.load(open(R+'goodwill.json'))}
-fund = {r['ticker']: r for r in L('fundamentals')}
+# No Excel (Zev, Nov 22, 2026): every card number comes from the report's own online-sourced accessors (kit/cardov.js -> data/cardov.json).
+try: CO = json.load(open(R + 'cardov.json'))['F']
+except Exception: CO = {}
+def cv(t, k):
+    v = (CO.get(t) or {}).get(k)
+    return v[0] if v else None
 
 _sch = json.load(open(R + 'schwab.json'))
 try: _th = json.load(open(R + 'themes.json'))
@@ -87,13 +92,12 @@ for t in tick:
         E = erscore.get(t, {}).get('t', {}); hist = (extra.get(t, {}).get('earnings') or {}).get('history') or []
         F = fin.get(t); rows = F['rows'] if F else []
         if isinstance(rows, str): rows = json.loads(rows)
-        fz = fund.get(t, {})
-        marg = {'gross': None, 'op': num(fz.get('Operating Margin')), 'net': num(fz.get('Net Profit Margin')), 'fcf': num(fz.get('Free Cash Flow Margin'))}
+        marg = {'gross': None, 'op': None, 'net': None, 'fcf': None}
         A = [x for x in rows if x and x.get('k') == 'A']
         gms = [x.get('gm') for x in A[-4:] if x.get('gm') is not None]
         if gms: marg['gross'] = sum(gms) / len(gms)
-        val = {'fpe': num(fz.get('Forward P/E')), 'ps': num(fz.get('Forward P/S')), 'peg': num(fz.get('PEG Ratio'))}
-        rg = num(fz.get('Y/Y Revenue Growth'))
+        val = {'fpe': None, 'ps': None, 'peg': None}
+        rg = None
         rk = srisk.get(t, {}); risk_sum = rk.get('summary'); risks = rk.get('risks'); top = rk.get('top')
         run = (extra.get(t, {}).get('runway') or {})
         news = clean_text((dup.get(t) or {}).get('text'), 3)
@@ -113,6 +117,11 @@ for t in tick:
         sr = X.get('sr') or {}; risk_sum = sr.get('summary'); risks = sr.get('risks'); top = sr.get('top')
         run = {}
         news = []
+    if t in CO:  # same numbers as the report's stock card, holdings and wish list alike
+        for k, f in (('gross', 'Gross Margin'), ('op', 'Operating Margin'), ('net', 'Net Profit Margin'), ('fcf', 'Free Cash Flow Margin')):
+            if cv(t, f) is not None: marg[k] = cv(t, f)
+        val = {'fpe': cv(t, 'Forward P/E'), 'ps': cv(t, 'P/S'), 'peg': cv(t, 'PEG Ratio')}
+        if cv(t, 'Y/Y Revenue Growth') is not None: rg = cv(t, 'Y/Y Revenue Growth')
     o['th'] = merge_theme(t, o['th'])
     o['sec'] = T_SECTOR.get(o['th']) or sector(o['th'])
     # technicals as percentages only

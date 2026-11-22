@@ -31,14 +31,21 @@ FK = ['Zev Score', 'Zacks Score', 'Smart Score', 'Analyst Consensus', 'Analyst P
       'P/E Growth', 'P/S', 'Forward P/S', 'P/S Growth', 'Revenue 1Y Growth', 'Revenue Forward 1Y CAGR', 'Y/Y Revenue Growth', 'Accelerating Growth',
       'Operating Margin', 'Net Profit Margin', 'Net Income 1Y Growth', 'Free Cash Flow Margin', 'Total Employees', 'Market Cap', 'Next ER Date']
 F = {}
-for r in L('fundamentals'):
+# No Excel (Zev, Nov 22, 2026): the site's card numbers come from the report's own online-sourced accessors (kit/cardov.js), never the Excel sheet.
+try: _co = json.load(open(D + 'cardov.json'))['F']
+except Exception: _co = {}
+_alias = {'P/S Compression': 'P/S Growth'}
+for _t, _o in _co.items():
     o = {}
-    for k in FK:
-        v = r.get(k)
-        if v in (None, '', '-'): continue
-        o[k] = [v, r.get(k + ' Fill'), r.get(k + ' Font')]
-    if o: F[r['ticker']] = o
-
+    for k, (v, tx) in _o.items():
+        val = v if v is not None else tx
+        if val in (None, '', '-', '—'): continue
+        o[_alias.get(k, k)] = [val, None, ('#00B050' if isinstance(v, (int, float)) and v > 0 else '#FF0000' if isinstance(v, (int, float)) and v < 0 else None) if k in ('Analyst Price Target %',) else None]
+        if k == 'P/S Compression': o['P/S Compression'] = o['P/S Growth']
+    if o: F[_t] = o
+for q in L('quotes'):
+    if q.get('next_earnings') and q['ticker'] in F: F[q['ticker']]['Next ER Date'] = [q['next_earnings'], None, None]
+FK = FK + ['Gross Margin', 'P/S Compression']
 # Fill gaps for wish-list stocks not in Zev's sheet (Nov 21, 2026): Smart Score, consensus and target from TipRanks, Zacks Rank from Zacks (no Excel colors; Zev Score stays blank).
 _px = {r['t']: r.get('px') for r in L('wish') if r.get('k') == 's'}
 for r in L('wishx'):

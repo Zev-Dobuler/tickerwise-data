@@ -12,6 +12,8 @@ python3 wh.py
 [ -f /home/claude/tw2/data/top_raw.json ] && python3 top.py
 [ -f /home/claude/tw2/data/spe_raw.json ] && python3 -c "import json,os;D='/home/claude/tw2/data/';p=D+'nx_new.json';n=json.load(open(p)) if os.path.exists(p) else {};n['SPE']=json.load(open(D+'spe_raw.json'));json.dump(n,open(p,'w'),separators=(',',':'))"
 [ -f /home/claude/tw2/data/nx_new.json ] && python3 nx.py
+[ -f /home/claude/tools/node_modules/d3/dist/d3.min.js ] || npm i -s --prefix /home/claude/tools d3@7.9.0 >/dev/null 2>&1
+node "$K/cardov.js" || echo 'cardov failed: card numbers left blank (no Excel fallback)'
 python3 qh.py
 python3 b1.py > /dev/null; python3 pk.py > /dev/null; python3 bx.py > /dev/null; python3 bm.py > /dev/null; python3 report.py > /dev/null
 python3 bundles.py | tail -1
