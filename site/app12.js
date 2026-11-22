@@ -18,6 +18,11 @@ const FK = 'tw_inv_follow', rdF = () => { try { return JSON.parse(localStorage.g
 const stockLink = (t, nm) => BY[t] ? `<a href="#/stock/${esc(t)}"><b>${esc(t)}</b></a>` : `<b>${esc(t)}</b>`;
 
 /* ---------- derived stats ---------- */
+INV.forEach(m => { // latest quarter: every held position's change comes from the holdings list (complete); exits come from the activity list
+  const a0 = m.A[Q] || [], imp = {}; a0.forEach(r => { imp[r[0]] = r; });
+  m.A[Q] = m.H.filter(h => h[3]).map(h => [h[0], h[3], imp[h[0]] ? imp[h[0]][2] : null, imp[h[0]] ? imp[h[0]][3] : null]).concat(a0.filter(r => /^Sell/.test(r[1])));
+  m.trunc = {}; Object.keys(m.A).forEach(q => { if (q !== Q && m.A[q].length >= 25) m.trunc[q] = 1; }); m.trunc.__noprev = 1;
+});
 INV.forEach(m => {
   const H = m.H; m.top10 = H.slice(0, 10).reduce((a, h) => a + (h[2] || 0), 0);
   let w = 0, s = 0; H.forEach(h => { if (h[5] && h[6] && h[2]) { w += h[2]; s += h[2] * (h[6] / h[5] - 1); } }); m.since = w ? s / w * 100 : null;
@@ -62,6 +67,8 @@ const css = document.createElement('style'); css.id = 'fi-css'; css.textContent 
 .fi-tape{overflow:hidden;white-space:nowrap;border-radius:12px;background:#0B1B3F;color:#E6F0FF;padding:10px 0;font-size:13px;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 .fi-tape div{display:inline-flex;gap:28px;animation:fitp 70s linear infinite;padding-left:20px}.fi-tape span b{color:#fff}@keyframes fitp{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.fi-tape div,.fi-tm a{animation:none}}
+.tabs.tabs-5.fi-4{grid-template-columns:repeat(4,1fr)}@media (max-width:980px){.tabs.tabs-5.fi-4{grid-template-columns:repeat(2,1fr)}}
+.fi-gauge{display:flex;height:12px;border-radius:7px;overflow:hidden;background:#EEF2F8;flex:1;min-width:120px}.fi-gauge i{display:block;height:100%}
 .fi-art{background:rgba(255,255,255,.97);color:var(--ink);border-radius:20px;padding:14px;box-shadow:0 30px 60px rgba(0,0,0,.3)}.fi-art h5{margin:0 0 8px;font:800 12px Inter,sans-serif;letter-spacing:.08em;color:#64748B;display:flex;justify-content:space-between}
 .fi-feed{height:250px;overflow:hidden;position:relative}.fi-feed ul{list-style:none;margin:0;padding:0;animation:fifd 40s linear infinite}.fi-feed li{display:flex;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px solid #EEF2F8;font-size:13px}@keyframes fifd{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 `;
@@ -134,7 +141,7 @@ function investor(id) {
   const others = t => (OWN[t] ? OWN[t].who.filter(x => x !== m) : []);
   const sim = INV.filter(x => x !== m).map(x => ({ x, s: x.H.filter(h => m.H.some(k => k[0] === h[0])).length })).filter(o => o.s).sort((a, b) => b.s - a.s).slice(0, 4);
   const chCol = (arr, k, title) => { const L = arr.filter(r => kind(r[1]) === k).sort((a, b) => (b[3] || 0) - (a[3] || 0)); return `<div><h4><span>${title}</span><span class="fi-b ${k}">${L.length}</span></h4><ul>${L.slice(0, 14).map(r => `<li><span>${stockLink(r[0])} <span class="muted" style="font-size:12px">${esc(nameOf(r[0]).slice(0, 16))}</span></span><span class="muted">${k === 'new' || k === 'sold' ? '' : esc(r[1].replace(/^(Add|Reduce) /, '')) + ' · '}${nz(r[3]) ? r[3].toFixed(2) + '%' : ''}</span></li>`).join('') || '<li class="muted">None</li>'}</ul></div>`; };
-  const changes = (arr, q) => arr.length ? `<div class="fi-ch">${chCol(arr, 'new', '🟢 New buys')}${chCol(arr, 'add', '⬆️ Added to')}${chCol(arr, 'cut', '⬇️ Trimmed')}${chCol(arr, 'sold', '🔴 Sold out')}</div><p class="muted" style="font-size:12px;margin:8px 0 0">Percent after each stock = how much of the whole portfolio the change represents. For adds and trims, the first number is the change in shares held.</p>` : `<p class="muted" style="margin:0">No changes reported in ${esc(q)}.</p>`;
+  const changes = (arr, q) => (m.trunc[q] ? '<p class="muted" style="font-size:12.5px;margin:0 0 10px">Showing the 25 biggest changes for ' + esc(q) + '.</p>' : '') + (arr.length ? `<div class="fi-ch">${chCol(arr, 'new', '🟢 New buys')}${chCol(arr, 'add', '⬆️ Added to')}${chCol(arr, 'cut', '⬇️ Trimmed')}${chCol(arr, 'sold', '🔴 Sold out')}</div><p class="muted" style="font-size:12px;margin:8px 0 0">Percent after each stock = how much of the whole portfolio the change represents. For adds and trims, the first number is the change in shares held.</p>` : `<p class="muted" style="margin:0">No changes reported in ${esc(q)}.</p>`);
   app.innerHTML = `<section class="fi-hero"><div class="wrap"><div style="margin-bottom:12px"><a href="#/investors" style="color:#C4D3F5;font-size:14px">← Famous Investors</a></div><div class="fi-ph">${mono(m, 92)}<div style="min-width:0"><h1>${esc(m.name)}</h1><p><b style="color:#fff">${esc(m.firm)}</b> · <span class="fi-st ${styleCls(m.style)}" style="margin:0">${esc(m.style)}</span></p><p>${esc(m.bio)}</p></div><div>${followBtn(m)}<p style="font-size:12px;color:#9FB3DD;margin:8px 0 0">Get alerts when the next 13F is filed</p></div></div></div></section>` + wrap(`
     <div class="fi-kp"><div><span>Portfolio value</span><b data-count>${bn(m.val)}</b><small>as of ${esc(m.date)}</small></div><div><span>Stocks held</span><b data-count>${m.n}</b><small>U.S.-listed positions</small></div><div><span>Top 10 holdings</span><b>${m.top10.toFixed(0)}%</b><small>of the portfolio</small></div><div><span>Since ${esc(m.date)}</span><b class="${cls(m.since)}">${pct(m.since)}</b><small>holdings at today's prices</small></div><div><span>Changes in ${esc(Q)}</span><b>${m.moves}</b><small>${m.cnt.new} new · ${m.cnt.sold} sold out</small></div></div>
     ${card('Portfolio Map', 'top holdings sized by weight', tmHtml(m))}
@@ -161,7 +168,7 @@ function stockOwners(t) {
 function stockBox(t) {
   const host = $('#app'); if (!host || $('#fi-sb', host)) return; const o = OWN[t]; if (!o) return; const tabs = $('nav.tabs', host); if (!tabs) return;
   const a = ACT[t] || { buy: [], sell: [] }, el = document.createElement('div'); el.id = 'fi-sb'; el.className = 'card'; el.style.margin = '14px 0';
-  el.innerHTML = `<div class="card-h"><h3>Famous Investors Who Own ${esc(t)}</h3><span>${o.who.length} of ${INV.length} · ${esc(Q)} 13F filings</span></div><div style="display:flex;gap:10px;flex-wrap:wrap">${o.who.slice(0, 12).map(m => { const h = m.H.find(x => x[0] === t), r = (m.A[Q] || []).find(x => x[0] === t); return `<a href="#/investors/${m.id}" style="display:flex;gap:8px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;text-decoration:none;color:inherit">${mono(m, 28)}<span style="font-size:13px"><b>${esc(m.name)}</b><br><span class="muted">${h[2].toFixed(1)}% of portfolio${r ? ' · ' + esc(r[1].split(' ')[0]) : ''}</span></span></a>`; }).join('')}</div>${a.buy.length || a.sell.length ? `<p class="muted" style="font-size:12.5px;margin:10px 0 0">${esc(Q)}: ${a.buy.length} bought or added, ${a.sell.length} trimmed or sold.</p>` : ''}`;
+  el.innerHTML = `<div class="card-h"><h3>Famous Investors Who Own ${esc(t)}</h3><span><a href="#/stock/${esc(t)}/famous">${o.who.length} of ${INV.length} · see all →</a></span></div><div style="display:flex;gap:10px;flex-wrap:wrap">${o.who.slice(0, 12).map(m => { const h = m.H.find(x => x[0] === t), r = (m.A[Q] || []).find(x => x[0] === t); return `<a href="#/investors/${m.id}" style="display:flex;gap:8px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;text-decoration:none;color:inherit">${mono(m, 28)}<span style="font-size:13px"><b>${esc(m.name)}</b><br><span class="muted">${h[2].toFixed(1)}% of portfolio${r ? ' · ' + esc(r[1].split(' ')[0]) : ''}</span></span></a>`; }).join('')}</div>${a.buy.length || a.sell.length ? `<p class="muted" style="font-size:12.5px;margin:10px 0 0">${esc(Q)}: ${a.buy.length} bought or added, ${a.sell.length} trimmed or sold.</p>` : ''}`;
   tabs.after(el);
 }
 
@@ -175,14 +182,35 @@ function homeTeaser() {
   anchor.after(s);
 }
 
+
+/* ---------- stock page: Famous Investors tab ---------- */
+const rankIn = (m, t) => m.H.findIndex(h => h[0] === t) + 1;
+function famousTab(t) {
+  const o = OWN[t], a = ACT[t] || { buy: [], sell: [] }, rows = o ? o.who.map(m => { const h = m.H.find(x => x[0] === t), r = (m.A[Q] || []).find(x => x[0] === t), r2 = QP ? (m.A[QP] || []).find(x => x[0] === t) : null; return { m, h, r, r2, val: h[4] * (h[5] || 0) }; }).sort((x, y) => y.h[2] - x.h[2]) : [];
+  const exits = a.sell.filter(x => /^Sell/.test(x[1][1])), nb = a.buy.length, ns = a.sell.length, tot = rows.reduce((x, r) => x + r.val, 0), nm = nameOf(t);
+  const mv = (r, m2, q) => !r ? `<span class="muted">${m2 && q && (m2.trunc[q] || !m2.A[q]) ? '—' : 'No change'}</span>` : `<span class="fi-b ${kind(r[1])}">${esc(/^Buy/.test(r[1]) ? 'New position' : r[1].replace(/^Reduce/, 'Trimmed').replace(/^Add/, 'Added'))}</span>`;
+  return `<div class="card"><div class="card-h"><h3>Famous Investors Who Own ${esc(t)}</h3><span>${esc(Q)} 13F filings · positions as of ${esc(INV[0].date)}</span></div>
+    <div class="fi-kp"><div><span>Famous owners</span><b>${rows.length}</b><small>of ${INV.length} tracked investors</small></div><div><span>Value they hold</span><b>${tot ? bn(tot) : '—'}</b><small>at ${esc(INV[0].date)} prices</small></div><div><span>Bought or added in ${esc(Q)}</span><b class="up">${nb}</b><small>${a.buy.filter(x => /^Buy/.test(x[1][1])).length} new positions</small></div><div><span>Trimmed or sold in ${esc(Q)}</span><b class="dn">${ns}</b><small>${exits.length} sold out completely</small></div></div>
+    ${nb + ns ? `<div style="display:flex;gap:12px;align-items:center;margin-top:14px;font-size:13px"><b class="up">${Math.round(nb / (nb + ns) * 100)}% buying</b><div class="fi-gauge"><i style="width:${nb / (nb + ns) * 100}%;background:#00B86B"></i><i style="width:${ns / (nb + ns) * 100}%;background:#E04B4B"></i></div><b class="dn">${Math.round(ns / (nb + ns) * 100)}% selling</b></div>` : ''}</div>
+    ${card('Who Owns It', rows.length ? 'sorted by how big ' + esc(t) + ' is in each portfolio' : '', rows.length ? `<div class="tbl-wrap" style="max-height:none"><table class="fi-tb"><thead><tr><th>Investor</th><th>Style</th><th class="num">% of their portfolio</th><th class="num">Rank in portfolio</th><th class="num">Shares</th><th class="num">Value</th><th>${esc(Q)} change</th>${QP ? `<th>${esc(QP)} change</th>` : ''}</tr></thead><tbody>${rows.map(r => `<tr><td><a href="#/investors/${r.m.id}" style="display:flex;gap:10px;align-items:center;color:inherit">${mono(r.m, 34)}<span><b>${esc(r.m.name)}</b><br><span class="muted" style="font-size:12px">${esc(r.m.firm)}</span></span></a></td><td><span class="fi-st ${styleCls(r.m.style)}" style="margin:0">${esc(r.m.style)}</span></td><td class="num"><div style="display:flex;gap:8px;align-items:center;justify-content:flex-end"><b>${r.h[2].toFixed(2)}%</b><div class="fi-pb" style="width:70px"><i style="width:${Math.min(100, r.h[2] / rows[0].h[2] * 100)}%"></i></div></div></td><td class="num">#${rankIn(r.m, t)} of ${r.m.n}</td><td class="num">${r.h[4].toLocaleString()}</td><td class="num">${bn(r.val)}</td><td>${mv(r.r)}</td>${QP ? `<td>${mv(r.r2, r.m, QP)}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : `<p style="margin:0">None of the ${INV.length} famous investors we track reported ${esc(t)} at the end of ${esc(Q)}.</p>`)}
+    ${exits.length ? card('Sold Out In ' + esc(Q), 'closed the whole position', `<div style="display:flex;gap:10px;flex-wrap:wrap">${exits.map(([m, r]) => `<a href="#/investors/${m.id}" style="display:flex;gap:8px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;text-decoration:none;color:inherit">${mono(m, 28)}<span style="font-size:13px"><b>${esc(m.name)}</b><br><span class="muted">was ${nz(r[3]) ? r[3].toFixed(2) + '% of portfolio' : 'a small position'}</span></span></a>`).join('')}</div>`) : ''}
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn ghost" href="#/investors">All ${INV.length} famous investors →</a><a class="btn ghost" href="#/investors#fi-con">What the legends agree on →</a></div>${note}`;
+}
+function stockTab(t) {
+  const nav = $('nav.tabs'); if (!nav) return false; nav.classList.add('fi-4');
+  if (!$('a[data-k="famous"]', nav)) { const after = $('a[data-k="institutions"]', nav), a = `<a href="#/stock/${esc(t)}/famous" class="x-tab" data-k="famous">Famous Investors</a>`; if (after) after.insertAdjacentHTML('afterend', a); else nav.insertAdjacentHTML('beforeend', a); }
+  const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('/'); if (p[2] === 'famous') { $$('a', nav).forEach(a => a.classList.toggle('on', a.dataset.k === 'famous')); const m = $('.main'); if (m && !$('#fi-st', m)) { m.innerHTML = `<div id="fi-st" style="display:flex;flex-direction:column;gap:18px">${famousTab(t)}</div>`; document.title = '$' + t + ' Famous Investors — Tickerwise'; } }
+  return true;
+}
+
 /* ---------- nav + router ---------- */
 function nav() { const n = $('#navlinks'); if (!n || $('a[data-r="investors"]', n)) return; const a = document.createElement('a'); a.href = '#/investors'; a.dataset.r = 'investors'; a.textContent = 'Investors'; const so = $('a[data-r="social"]', n); n.insertBefore(a, so || null); }
 function route() {
   nav(); const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('/'); $$('#navlinks a').forEach(a => { if (a.dataset.r === 'investors') a.classList.toggle('on', p[0] === 'investors'); });
   if (p[0] === 'investors') { $$('#navlinks a').forEach(a => { if (a.dataset.r !== 'investors') a.classList.remove('on'); }); try { if (p[1] === 'stock' && p[2]) stockOwners(decodeURIComponent(p[2]).toUpperCase()); else if (p[1]) investor(p[1].toLowerCase()); else directory(); } catch (e) { if (window.console) console.error(e); } return; }
-  if (!p[0]) setTimeout(homeTeaser, 400); if (p[0] === 'stock' && p[1] && (!p[2] || p[2] === 'overview')) { let n = 0; const go = () => { if ($('nav.tabs')) stockBox(decodeURIComponent(p[1]).toUpperCase()); else if (n++ < 30) setTimeout(go, 100); }; setTimeout(go, 200); }
+  if (!p[0]) setTimeout(homeTeaser, 400); if (p[0] === 'stock' && p[1]) { const t = decodeURIComponent(p[1]).toUpperCase(); let n = 0; const go = () => { if ($('nav.tabs a.x-tab')) { stockTab(t); if (!p[2] || p[2] === 'overview') stockBox(t); if (p[2] === 'famous' && n++ < 12) setTimeout(go, 150); } else if (n++ < 40) setTimeout(go, 100); }; setTimeout(go, 120); }
 }
-let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; nav(); const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('/'); if (!p[0]) homeTeaser(); }, 120); }).observe(app, { childList: true });
+let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; nav(); const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('/'); if (!p[0]) homeTeaser(); if (p[0] === 'stock' && p[1]) stockTab(decodeURIComponent(p[1]).toUpperCase()); }, 120); }).observe(app, { childList: true, subtree: true });
 window.addEventListener('hashchange', () => setTimeout(route, 30)); route();
 window.TWFI = { INV, OWN, ACT, Q };
 })();
