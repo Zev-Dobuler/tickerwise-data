@@ -169,7 +169,7 @@ function constellation() { const W0 = jget('tw-watchlist', []).filter(t => BY[t]
     tip(hov ? `<b>${esc(hov.t)}</b> ${esc(hov.s.n || '')} · ${hov.s.ws}/10 · 1M ${pct((hov.s.ret || {}).r1m)}` : '', m.x, m.y); }); return el; }
 
 /* ---------- placement (one banner per page) ---------- */
-const MAP = { screener: funnel, compare: arena, congress: dome, 'short-squeeze': springs, correlation: web, pick5: podium, leagues: podium, academy: path, account: shelf };
+const MAP = { compare: arena, congress: dome, 'short-squeeze': springs, correlation: web, pick5: podium, leagues: podium, academy: path, account: shelf };
 const TAB = { analysts: fan, insiders: beads, institutions: currents, earnings: dominoes, technicals: seasonClock };
 function put(fn, where, how) { if (!where) return; let e = null; try { e = fn(); } catch (er) { if (window.console) console.error(er); } if (!e) return; const box = document.createElement('div'); box.className = 'bx-set bx-set4'; box.style.cssText = 'display:flex;flex-direction:column;gap:18px'; box.appendChild(e); where[how || 'prepend'](box); }
 function route() { const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('?')[0].split('/'), k = p[0] || 'home'; let n = 0; const wait = (ok, fn) => { const go = () => { if (ok()) fn(); else if (n++ < 45) setTimeout(go, 200); }; setTimeout(go, 750); };
