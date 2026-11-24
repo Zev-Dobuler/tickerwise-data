@@ -79,7 +79,7 @@ const C = [
   ['stk', 'Beat Streak', 'Earnings', s => num(s.earn.streak), v => n1(v), [['8+ quarters', 8, null], ['4 to 7', 4, 8], ['1 to 3', 1, 4], ['None', 0, 1]]],
   ['brec', 'Beat Record (EPS + Revenue)', 'Earnings', s => num(((s.earn || {}).x || {}).cb), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]], ['l8r', 'Last 8 Revenue Beat', 'Earnings', s => num((s.earn || {}).rl8), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]],
   ['gd', 'Guidance', 'Earnings', s => ((s.earn || {}).x || {}).gd, v => v ? `<span style="white-space:nowrap" class="${/Above|Raised/.test(v) ? 'up' : /Below|Lowered/.test(v) ? 'dn' : ''}">${esc(v.replace(/^New: /, ''))}</span>` : '<span class="muted">—</span>'],
-  ['nx', 'Next Earnings', 'Earnings', s => days(s.earn.next), (v, s) => v == null ? '<span class="muted">—</span>' : `<span style="white-space:nowrap;${v >= 0 && v <= 14 ? 'background:#FFE45C;padding:1px 6px;border-radius:5px' : ''}">${esc(s.earn.next)}${v >= 0 ? ` <span class="muted">(${v}d)</span>` : ''}</span>`, [['Next 7 days', 0, 8], ['8 to 30 days', 8, 31], ['31 to 60 days', 31, 61], ['Over 60 days', 61, null]], 1],
+  ['nx', 'Next Earnings', 'Earnings', s => days(s.earn.next), (v, s) => v == null ? '<span class="muted">—</span>' : `<span style="white-space:nowrap;${v >= 0 && v <= 14 ? 'background:#FFE45C;padding:1px 6px;border-radius:5px' : ''}">${esc(mdTh(s.earn.next))}${v >= 0 ? ` <span class="muted">(${v}d)</span>` : ''}</span>`, [['Next 7 days', 0, 8], ['8 to 30 days', 8, 31], ['31 to 60 days', 31, 61], ['Over 60 days', 61, null]], 1],
   ['rday', 'Avg Reaction Day', 'Earnings', s => avg(mv(s).map(r => r[2])), v => pctc(v, 1), cuts([-5, -2, 0, 2, 5], '%')],
   ['pre7', 'Avg 7 Days Before', 'Earnings', s => avg(mv(s).map(r => r[1])), v => pctc(v, 1), cuts([-5, 0, 5], '%')],
   ['rsize', 'Avg Move Size', 'Earnings', s => avg(mv(s).map(r => r[2] == null ? null : Math.abs(r[2]))), v => v == null ? '<span class="muted">—</span>' : v.toFixed(1) + '%', [['Under 3%', null, 3], ['3% to 6%', 3, 6], ['6% to 10%', 6, 10], ['Over 10%', 10, null]]],
@@ -199,6 +199,9 @@ const fgOf = c => FG[c[0]] || c[2];
 /* more Clear buttons (Zev, Nov 24, 2026: "this is a very long screener"): top bar, every filter group, the pill filters, under the panel and under the table */
 const nAct = () => Object.values(ST.f).reduce((a, x) => a + x.length, 0) + ST.cons.length + ST.acc.length + Object.values(ST.ch || {}).reduce((a, x) => a + x.length, 0) + (ST.pre ? 1 : 0) + (ST.th ? 1 : 0) + (ST.sec ? 1 : 0) + (ST.q ? 1 : 0);
 const clrAll = () => { const n = nAct(); return `<button type="button" class="s2-clr${n ? '' : ' off'}" data-clear ${n ? '' : 'disabled'}>✕ Clear all filters${n ? ' (' + n + ')' : ''}</button>`; };
+/* dates as "July 5th", no year (Zev, Nov 24, 2026: "it's pretty obvious what the year is") */
+const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const mdTh = d => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ''); if (!m) return d || ''; const n = +m[3], sf = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; return MON[+m[2] - 1] + ' ' + n + sf; };
 function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
   /* fewer filter rows (Zev, Nov 24, 2026): the two analyst filters and Employees sit in the first row with Overview; the table's column groups are unchanged */
