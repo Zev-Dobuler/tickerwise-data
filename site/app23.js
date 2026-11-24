@@ -147,7 +147,7 @@ const PAGES = { 'target-tracker': targetTracker, 'ai-finder': aiFinder, 'risk-sc
 function route() { const p = location.hash.replace(/^#\/?/, '').split('#')[0].split('?')[0].split('/');
   if (PAGES[p[0]]) { $$('#navlinks a').forEach(a => a.classList.toggle('on', a.dataset.r === 'tools')); try { PAGES[p[0]](); } catch (e) { if (window.console) console.error(e); } window.scrollTo(0, 0); return; }
   let n = 0; const wait = (ok, fn) => { const go = () => { if (ok()) fn(); else if (n++ < 35) setTimeout(go, 200); }; setTimeout(go, 450); };
-  if (p[0] === 'stock' && p[1] && p[2] === 'analysts') wait(() => $('.main') && !$('#r6-pt'), () => { const h = priceTargets(decodeURIComponent(p[1]).toUpperCase()); if (h) { const d = document.createElement('div'); d.innerHTML = h; const a = $('#r5-tm'); a ? a.before(d.firstChild) : $('.main').appendChild(d.firstChild); } });
+  if (false && p[0] === 'stock' && p[1] && p[2] === 'analysts') wait(() => $('.main') && !$('#r6-pt'), () => { const h = priceTargets(decodeURIComponent(p[1]).toUpperCase()); if (h) { const d = document.createElement('div'); d.innerHTML = h; const a = $('#r5-tm'); a ? a.before(d.firstChild) : $('.main').appendChild(d.firstChild); } });
   if (p[0] === 'tools') wait(() => $('#app .tt-g'), toolTiles);
   if (p[0] === 'screener') wait(() => $('#app .sec .wrap'), () => aiTeaser($('#app .sec .wrap')));
 }

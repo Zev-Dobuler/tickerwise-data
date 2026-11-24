@@ -125,27 +125,46 @@ function fairValue(s) {
 
 /* ===== 3. Analyst Target History (Analysts tab) ===== */
 function targetHist(s) {
+  /* One chart for the Analysts tab (Zev, Nov 24, 2026: merged "Analyst Target History" + "Price vs Analyst Targets").
+     Price line, the month-end average target (MarketBeat), every firm's individual target as a dot, and a hover that lists
+     the firms behind each month's average. The firm list rides on the last target-history point (kit/nx.js). */
   const T = (NX.TH || {})[s.t], P = pxSeries(s.t); if (!T || T.length < 2 || !P) return '';
-  const W = 900, H = 260, pl = 56, pr = 120, pt = 16, pb = 28, iw = W - pl - pr, ih = H - pt - pb;
+  const W = 900, H = 300, pl = 56, pr = 120, pt = 16, pb = 28, iw = W - pl - pr, ih = H - pt - pb;
   const d0 = Math.round(new Date(T[0][0] + 'T12:00:00Z') / 864e5), last = P[P.length - 1], d1 = last.d, PP = P.filter(p => p.d >= d0);
-  const pts = T.map(r => [Math.round(new Date(r[0] + 'T12:00:00Z') / 864e5), r[1], r[2]]), an = (TW.AN || {})[s.t];
-  const vs = PP.map(p => p.c).concat(pts.map(p => p[1])), mx = Math.max(...vs) * 1.06, mn = Math.min(...vs) * 0.94;
+  const dn = x => Math.round(new Date(x + 'T12:00:00Z') / 864e5), pts = T.map(r => [dn(r[0]), r[1], r[2]]), LR = (T[T.length - 1][3] || []).filter(r => r && r[4] > 0);
+  const DOTS = LR.filter(r => dn(r[0]) >= d0);
+  const vs = PP.map(p => p.c).concat(pts.map(p => p[1]), DOTS.map(r => r[4])), mx = Math.max(...vs) * 1.05, mn = Math.min(...vs) * 0.94;
   const X = d => pl + (d - d0) / ((d1 - d0) || 1) * iw, Y = v => pt + ih - (v - mn) / ((mx - mn) || 1) * ih, F = v => '$' + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
+  const rc = r => /buy|outperform|overweight|accumulate|positive/i.test(r) ? '#10B981' : /sell|underperform|underweight|reduce|negative/i.test(r) ? '#EF4444' : '#F59E0B';
   let g = ''; [mn, (mn + mx) / 2, mx].forEach(v => { g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#EEF2F8"/><text x="${pl - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#94A3B8">${F(v)}</text>`; });
+  g += DOTS.map(r => `<circle cx="${X(dn(r[0])).toFixed(1)}" cy="${Y(r[4]).toFixed(1)}" r="4.2" fill="${rc(r[3])}" opacity=".55"/>`).join('');
   g += `<polyline fill="none" stroke="#0B1B3F" stroke-width="2" points="${PP.map(p => X(p.d).toFixed(1) + ',' + Y(p.c).toFixed(1)).join(' ')}"/>`;
-  g += `<polyline fill="none" stroke="#00B86B" stroke-width="2.6" stroke-dasharray="6 4" points="${pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}"/>`;
-  pts.forEach((p, i) => { g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="${i === pts.length - 1 ? 5.5 : 3.6}" fill="#00B86B"/><rect class="hv" x="${X(p[0]) - 12}" y="${pt}" width="24" height="${ih}" fill="transparent" data-tip="${esc(dfmt(new Date(p[0] * 864e5).toISOString().slice(0, 10)) + '|Average target ' + F(p[1]) + (p[2] ? ' (' + p[2] + ' analysts)' : ''))}"/>`; });
+  g += `<polyline fill="none" stroke="#7C3AED" stroke-width="2.6" stroke-dasharray="6 4" points="${pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ')}"/>`;
+  pts.forEach((p, i) => { g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="${i === pts.length - 1 ? 5.5 : 3.8}" fill="#7C3AED"/>`; });
   const lp = pts[pts.length - 1], ly = Y(lp[1]), lyp = Y(last.c), sep = Math.abs(ly - lyp) < 16 ? (ly < lyp ? -8 : 8) : 0;
-  g += `<text x="${W - pr + 12}" y="${ly + 4 + sep}" font-size="12" font-weight="800" fill="#00995A">Target ${F(lp[1])}</text><text x="${W - pr + 12}" y="${lyp + 4 - sep}" font-size="12" font-weight="700" fill="#0B1B3F">Price ${F(last.c)}</text>`;
+  g += `<text x="${W - pr + 12}" y="${ly + 4 + sep}" font-size="12" font-weight="800" fill="#6D28D9">Target ${F(lp[1])}</text><text x="${W - pr + 12}" y="${lyp + 4 - sep}" font-size="12" font-weight="700" fill="#0B1B3F">Price ${F(last.c)}</text>`;
   [0, 0.25, 0.5, 0.75, 1].forEach(f => { const d = d0 + (d1 - d0) * f, dt = pxDate(d); g += `<text x="${X(d)}" y="${H - 8}" text-anchor="middle" font-size="10.5" fill="#94A3B8">${MON[dt.getUTCMonth()]} ${String(dt.getUTCFullYear()).slice(2)}</text>`; });
-  const first = pts[0][1], chg = (lp[1] / first - 1) * 100, pchg = PP.length ? (last.c / PP[0].c - 1) * 100 : null;
+  g += `<line class="th-x" x1="0" x2="0" y1="${pt}" y2="${pt + ih}" stroke="#0B1B3F" stroke-width="1" opacity="0"/><rect class="th-hit" x="${pl}" y="${pt}" width="${iw}" height="${ih}" fill="transparent"/>`;
+  const first = pts[0][1], chg = (lp[1] / first - 1) * 100, pchg = PP.length ? (last.c / PP[0].c - 1) * 100 : null, up = (lp[1] / last.c - 1) * 100;
+  const NOW = (() => { const e = d1, lat = {}; LR.forEach(r => { const d = dn(r[0]); if (d <= e && d >= e - 365 && (!lat[r[1]] || d > dn(lat[r[1]][0]))) lat[r[1]] = r; }); return Object.values(lat); })(), hi = NOW.length ? Math.max(...NOW.map(r => r[4])) : null, lo = NOW.length ? Math.min(...NOW.map(r => r[4])) : null;
   const read = chg > 5 && nz(pchg) && pchg < chg - 10 ? 'Analysts have raised targets faster than the price has moved: they are getting ahead of the stock.' : chg < -5 ? 'Analysts have been cutting targets.' : nz(pchg) && pchg > chg + 15 ? 'The price has run ahead of analyst targets: they are chasing the stock.' : 'Targets and price have moved roughly together.';
-  return card('Analyst Target History', 'average price target over the past year vs the price',
-    `<div class="th-k"><div><span>Average target, ${MON[pxDate(pts[0][0]).getUTCMonth()]} ${pxDate(pts[0][0]).getUTCFullYear()}</span><b>${F(first)}</b></div><div><span>Today</span><b>${F(lp[1])}</b></div><div><span>Target change</span><b class="${cls(chg)}">${sg(chg, 0)}</b></div><div><span>Price change, same period</span><b class="${cls(pchg)}">${sg(pchg, 0)}</b></div></div>${an && nz(an[0]) ? `<p class="nx-src" style="margin:0 0 6px">This chart uses MarketBeat's full rating history so the line is consistent over time. The Analyst Upside on this page uses TipRanks' current average of <b>$${an[0].toFixed(2)}</b>; the two services count slightly different analysts.</p>` : ''}
-    <p class="th-read">${read}</p><div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Analyst target history">${g}</svg></div>
-    <div class="legend"><span><i style="background:#0B1B3F"></i>Price</span><span><i style="background:#00B86B"></i>Average analyst target (dashed)</span></div>
-    ${src('Month-end averages of each firm\'s latest price target in the 12 months before that date, from MarketBeat rating history (last point = today)', ND.TH)}`, 'th-' + s.t);
+  const p0 = PP.find(p => p.d >= pts[0][0]) || PP[0], g0 = p0 ? (first / p0.c - 1) * 100 : null, conv = nz(g0) ? (Math.abs(up) < Math.abs(g0) ? ` The gap to the average target <b>shrank</b> from ${sg(g0, 0)} to ${sg(up, 0)}.` : ` The gap to the average target <b>widened</b>, from ${sg(g0, 0)} to ${sg(up, 0)}.`) : '';
+  window.__thD = window.__thD || {}; window.__thD[s.t] = { pts, PP, LR, d0, d1, mn, mx, W, H, pl, pr, pt, pb };
+  return card('Analyst Target History', 'price vs the average analyst target, last 12 months · hover a month to see every analyst',
+    `<div class="th-k"><div><span>Average target, ${MON[pxDate(pts[0][0]).getUTCMonth()]} ${pxDate(pts[0][0]).getUTCFullYear()}</span><b>${F(first)}</b></div><div><span>Average target today</span><b>${F(lp[1])}</b></div><div><span>Target change</span><b class="${cls(chg)}">${sg(chg, 0)}</b></div><div><span>Price change, same period</span><b class="${cls(pchg)}">${sg(pchg, 0)}</b></div><div><span>Upside to average</span><b class="${cls(up)}">${sg(up, 0)}</b></div>${hi != null ? `<div><span>Highest / lowest target</span><b>${F(hi)} / ${F(lo)}</b></div>` : ''}<div><span>Analysts in the average</span><b>${lp[2]}</b></div></div>
+    <p class="th-read">${read}${conv}</p><div class="chart" style="position:relative"><svg class="th-svg" data-t="${esc(s.t)}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Analyst target history" style="touch-action:pan-y">${g}</svg><div class="th-tip" style="position:absolute;display:none;pointer-events:none;background:#0B1B3F;color:#fff;border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.45;z-index:5;max-width:330px;box-shadow:0 8px 24px rgba(11,27,63,.28)"></div></div>
+    <div class="legend"><span><i style="background:#0B1B3F"></i>Price</span><span><i style="background:#7C3AED"></i>Average analyst target (dashed)</span>${DOTS.length ? '<span><i style="background:#10B981;border-radius:50%"></i>Buy</span><span><i style="background:#F59E0B;border-radius:50%"></i>Hold</span><span><i style="background:#EF4444;border-radius:50%"></i>Sell target, on the day it was set</span>' : ''}</div>
+    ${src('Month-end averages of each firm\'s latest price target in the 12 months before that date, from MarketBeat rating history (last point = today). The Analyst Upside elsewhere on this page uses TipRanks\' current average; the two services count slightly different analysts', ND.TH)}`, 'th-' + s.t);
 }
+function thBind(t) { const D = (window.__thD || {})[t], svg = document.querySelector(`.th-svg[data-t="${t}"]`); if (!D || !svg || svg.dataset.b) return; svg.dataset.b = 1;
+  const tip = svg.parentNode.querySelector('.th-tip'), xl = svg.querySelector('.th-x'), { pts, PP, LR, d0, d1, W, H, pl, pr, pt, pb } = D, iw = W - pl - pr, dn = x => Math.round(new Date(x + 'T12:00:00Z') / 864e5), X = d => pl + (d - d0) / ((d1 - d0) || 1) * iw, F = v => '$' + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
+  const rc = r => /buy|outperform|overweight|accumulate|positive/i.test(r) ? '#34D399' : /sell|underperform|underweight|reduce|negative/i.test(r) ? '#F87171' : '#FBBF24';
+  const mv = ev => { const r = svg.getBoundingClientRect(), vx = (ev.clientX - r.left) / r.width * W; let p = pts[0]; pts.forEach(q => { if (Math.abs(X(q[0]) - vx) < Math.abs(X(p[0]) - vx)) p = q; });
+    const x = X(p[0]); xl.setAttribute('x1', x); xl.setAttribute('x2', x); xl.setAttribute('opacity', .3); const pc = PP.filter(q => q.d <= p[0]).pop(), gap = pc ? (p[1] / pc.c - 1) * 100 : null;
+    const lat = {}; LR.forEach(rw => { const d = dn(rw[0]); if (d <= p[0] && d >= p[0] - 365 && (!lat[rw[1]] || d > dn(lat[rw[1]][0]))) lat[rw[1]] = rw; }); const L = Object.values(lat).sort((a, b) => b[4] - a[4]);
+    tip.innerHTML = `<div style="font-weight:800;margin-bottom:2px">${esc(dfmt(new Date(p[0] * 864e5).toISOString().slice(0, 10)))}</div>Average target <b>${F(p[1])}</b> · <b>${p[2]} analyst${p[2] === 1 ? '' : 's'}</b>${pc ? `<br>Price ${F(pc.c)} · gap ${sg(gap, 0)}` : ''}` + (L.length ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.15);max-height:220px;overflow:hidden">${L.slice(0, 18).map(rw => `<div style="display:flex;justify-content:space-between;gap:10px"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${rc(rw[3])};margin-right:5px"></i>${esc(rw[1])}${rw[2] ? ` <span style="opacity:.7">(${esc(rw[2])})</span>` : ''}</span><b>${F(rw[4])}</b></div>`).join('')}${L.length > 18 ? `<div style="opacity:.7">+${L.length - 18} more</div>` : ''}</div>` : `<div style="margin-top:5px;opacity:.75">Analyst names arrive with the next nightly update.</div>`);
+    tip.style.display = 'block'; const px = x / W * r.width, tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(px + 14 + tw > r.width ? px - tw - 14 : px + 14, r.width - tw)) + 'px'; tip.style.top = '8px'; };
+  svg.addEventListener('pointermove', mv); svg.addEventListener('pointerdown', mv); svg.addEventListener('pointerleave', () => { tip.style.display = 'none'; xl.setAttribute('opacity', 0); }); }
 
 /* ===== 4. Revenue by Segment & Geography (Financials tab) ===== */
 const SEGC = ['#2F6BFF', '#00B86B', '#F28C28', '#9B6BDE', '#E04B4B', '#0EA5E9', '#C9A000', '#64748B', '#D946EF', '#14B8A6'];
@@ -303,7 +322,7 @@ function post() {
       if (tab === 'technicals') add(seasonality(s), 'sea-' + t);
       if (tab === 'financials') add(segments(s), 'seg-' + t);
       if (tab === 'earnings') { const f = $('.card', m); if (f) callPro(t, f, 'beforebegin'); }
-      if (tab === 'analysts') { const th = targetHist(s); if (th && !document.getElementById('th-' + t)) { const f = $('.card', m); if (f) f.insertAdjacentHTML('afterend', th); else m.insertAdjacentHTML('beforeend', th); } }
+      if (tab === 'analysts') { const th = targetHist(s); if (th && !document.getElementById('th-' + t)) { const f = $('.card', m); if (f) f.insertAdjacentHTML('afterend', th); else m.insertAdjacentHTML('beforeend', th); } thBind(t); }
       if (tab === 'institutions') { add(superInv(s), 'si-' + t); add(etfs(s), 'etf-' + t); }
       if (tab === 'insiders') add(congress(s), 'cg-' + t);
     }
