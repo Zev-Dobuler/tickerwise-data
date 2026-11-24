@@ -69,7 +69,7 @@ const C = [
   ['emp', 'Employees', 'Profitability', s => FN(s, 'Total Employees'), v => v == null ? '<span class="muted">—</span>' : (+v).toLocaleString('en-US'), [['100,000+', 100000, null], ['10,000 to 99,999', 10000, 100000], ['1,000 to 9,999', 1000, 10000], ['Under 1,000', null, 1000]]],
   ['de', 'Debt/Equity', 'Financial Health', s => num(QS(s.t).de), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 2 ? 'dn' : ''}">${v.toFixed(2)}</span>`, [['Under 0.3', null, 0.3], ['0.3 to 1', 0.3, 1], ['1 to 2', 1, 2], ['Over 2', 2, null]], 1],
   ['cr', 'Current Ratio', 'Financial Health', s => num(QS(s.t).cr), v => n1(v, 2), [['Under 1', null, 1], ['1 to 2', 1, 2], ['Over 2', 2, null]]],
-  ['ic', 'Interest Coverage', 'Financial Health', s => num(QS(s.t).ic), v => v == null ? '<span class="muted">—</span>' : v > 999 ? '999+' : v.toFixed(1) + 'x'],
+  ['ic', 'Interest Coverage', 'Financial Health', s => num(QS(s.t).ic), v => v == null ? '<span class="muted">—</span>' : v > 999 ? '999+' : v.toFixed(1) + 'x', [['Over 10x', 10, null], ['3x to 10x', 3, 10], ['1x to 3x', 1, 3], ['Under 1x', null, 1]]],
   ['fsc', 'Piotroski F-Score', 'Financial Health', s => num(QS(s.t).f), v => n1(v), [['7 to 9 (strong)', 7, 10], ['4 to 6', 4, 7], ['0 to 3 (weak)', 0, 4]]],
   ['z', 'Altman Z-Score', 'Financial Health', s => num(QS(s.t).z), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 3 ? 'up' : v < 1.8 ? 'dn' : ''}">${v.toFixed(1)}</span>`, [['Safe (over 3)', 3, null], ['Grey zone (1.8 to 3)', 1.8, 3], ['Distress (under 1.8)', null, 1.8]]],
   ['dil', 'Share Change 1Y', 'Financial Health', s => num(QS(s.t).sh1), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 2 ? 'dn' : v < 0 ? 'up' : ''}">${sgn(v, 1)}</span>`, [['Buying back (under 0%)', null, 0], ['0% to 2%', 0, 2], ['2% to 10% (dilution)', 2, 10], ['Over 10%', 10, null]], 1],
@@ -92,9 +92,9 @@ const C = [
   ['inst', 'Institutions Own', 'Ownership', s => num((XX(s.t).h || [])[0]), v => v == null ? '<span class="muted">—</span>' : v.toFixed(0) + '%', [['Over 80%', 80, null], ['50% to 80%', 50, 80], ['Under 50%', null, 50]]],
   ['fam', 'Famous Investors', 'Ownership', s => FAM(s.t) || null, v => v == null ? '<span class="muted">0</span>' : `<b>${v}</b>`, [['5+', 5, null], ['2 to 4', 2, 5], ['1', 1, 2]]],
   ['ins', 'Insider Trades (Net)', 'Ownership', s => { const i = XX(s.t).i; return i ? (i[1] || 0) - (i[2] || 0) : null; }, v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'up' : v < 0 ? 'dn' : ''}">${v > 0 ? '+' : ''}${v}</span>`, [['Net buying', 1, null], ['Even', 0, 1], ['Net selling', null, 0]]],
-  ['cg', 'Congress Trades (Net)', 'Ownership', s => { const c = (NX.CG || {})[s.t]; return c ? (c[0] || 0) - (c[1] || 0) : null; }, v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'up' : v < 0 ? 'dn' : ''}">${v > 0 ? '+' : ''}${v}</span>`],
+  ['cg', 'Congress Trades (Net)', 'Ownership', s => { const c = (NX.CG || {})[s.t]; return c ? (c[0] || 0) - (c[1] || 0) : null; }, v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'up' : v < 0 ? 'dn' : ''}">${v > 0 ? '+' : ''}${v}</span>`, [['Net buying', 1, null], ['Even', 0, 1], ['Net selling', null, 0]]],
   ['sh', 'Short % Float', 'Ownership', s => num((XX(s.t).sh || [])[0]), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 10 ? 'dn' : ''}">${v.toFixed(1)}%</span>`, [['Under 3%', null, 3], ['3% to 10%', 3, 10], ['10% to 20%', 10, 20], ['Over 20%', 20, null]]],
-  ['dtc', 'Days to Cover', 'Ownership', s => num((XX(s.t).sh || [])[1]), v => n1(v, 1)]
+  ['dtc', 'Days to Cover', 'Ownership', s => num((XX(s.t).sh || [])[1]), v => n1(v, 1), [['Over 5 days', 5, null], ['2 to 5 days', 2, 5], ['Under 2 days', null, 2]]]
 ];
 const CK = {}; C.forEach(c => { CK[c[0]] = c; });
 const GROUPS = [...new Set(C.map(c => c[2]))];
@@ -119,7 +119,8 @@ const PRE = [
 ];
 /* ---------- state ---------- */
 const FKEYS = C.filter(c => c[5]).map(c => c[0]);
-let ST = { q: '', th: '', sec: '', f: {}, cons: [], acc: [], pre: '', sort: [['ws', -1]], hide: [], open: false };
+let ST = { q: '', th: '', sec: '', f: {}, cons: [], acc: [], ch: {}, pre: '', sort: [['ws', -1]], hide: [], open: false };
+const CHIPS = [['vgm', 'Zacks Style (VGM)', ['A', 'B', 'C', 'D', 'F']], ['gd', 'Guidance', ['Raised', 'Above Consensus', 'Maintained', 'In Line', 'Mixed', 'Lowered', 'Below Consensus', 'None Given']]];
 try { const o = JSON.parse(localStorage.getItem('tw_scr2_st') || 'null'); if (o) ST = Object.assign(ST, { hide: o.hide || [], sort: o.sort || ST.sort }); } catch (e) {}
 const save = () => { try { localStorage.setItem('tw_scr2_st', JSON.stringify({ hide: ST.hide, sort: ST.sort })); } catch (e) {} };
 const inB = (v, b) => v != null && (b[1] == null || v >= b[1]) && (b[2] == null || v < b[2]);
@@ -128,6 +129,7 @@ function pass(s, skip) {
   if (ST.th && s.th !== ST.th) return false; if (ST.sec && s.sec !== ST.sec) return false;
   if (ST.cons.length && !ST.cons.includes(g(s, 'cons') || 'No rating')) return false;
   if (ST.acc.length && !ST.acc.includes(g(s, 'acc') || 'No data')) return false;
+  for (const [k, sel] of Object.entries(ST.ch || {})) if (sel.length && !sel.some(x => String(g(s, k) || 'None Given').toLowerCase() === x.toLowerCase())) return false;
   if (ST.pre) { const p = PRE.find(x => x[0] === ST.pre); if (p && !p[2](s)) return false; }
   for (const k in ST.f) { if (k === skip || !ST.f[k].length) continue; const c = CK[k], v = c[3](s); if (!ST.f[k].some(i => inB(v, c[5][i]))) return false; }
   return true;
@@ -194,11 +196,12 @@ function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
   return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => c[2] === gn && c[5]); return L.length ? `<div class="s2-g"><h5>${esc(gn)}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
     <div class="s2-pills"><div><span class="l">Analyst consensus</span>${cs.map(x => `<button type="button" data-cons="${x}" class="${ST.cons.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
-    <div><span class="l">Accelerating growth</span>${ac.map(x => `<button type="button" data-acc="${x}" class="${ST.acc.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div></div></div>`;
+    <div><span class="l">Accelerating growth</span>${ac.map(x => `<button type="button" data-acc="${x}" class="${ST.acc.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
+    ${CHIPS.map(([k, lab, V]) => { const have = new Set(S.map(s => String(g(s, k) || 'None Given').toLowerCase())); const vals = V.filter(v => have.has(v.toLowerCase())); return vals.length ? `<div><span class="l">${esc(lab)}</span>${vals.map(x => `<button type="button" data-ch="${k}" data-v="${esc(x)}" class="${((ST.ch || {})[k] || []).includes(x) ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''; }).join('')}</div></div>`;
 }
 const mine = () => { try { return JSON.parse(localStorage.getItem('tw_scr2_saved') || '[]'); } catch (e) { return []; } };
 function view() {
-  const vis = C.filter(c => !ST.hide.includes(c[2])), L = sorted(S.filter(s => pass(s))), act = Object.values(ST.f).reduce((a, x) => a + x.length, 0) + ST.cons.length + ST.acc.length + (ST.pre ? 1 : 0) + (ST.th ? 1 : 0) + (ST.sec ? 1 : 0) + (ST.q ? 1 : 0);
+  const vis = C.filter(c => !ST.hide.includes(c[2])), L = sorted(S.filter(s => pass(s))), act = Object.values(ST.f).reduce((a, x) => a + x.length, 0) + ST.cons.length + ST.acc.length + Object.values(ST.ch || {}).reduce((a, x) => a + x.length, 0) + (ST.pre ? 1 : 0) + (ST.th ? 1 : 0) + (ST.sec ? 1 : 0) + (ST.q ? 1 : 0);
   const grp = []; vis.forEach(c => { const l = grp[grp.length - 1]; if (l && l[0] === c[2]) l[1]++; else grp.push([c[2], 1]); });
   const arrow = k => { const i = ST.sort.findIndex(x => x[0] === k); return i < 0 ? '' : `<span class="ar">${ST.sort[i][1] > 0 ? '▲' : '▼'}${ST.sort.length > 1 ? i + 1 : ''}</span>`; };
   const M = mine();
@@ -223,7 +226,8 @@ function draw() {
 }
 function wire(box) {
   $$('[data-pre]', box).forEach(b => b.onclick = () => { ST.pre = ST.pre === b.dataset.pre ? '' : b.dataset.pre; draw(); });
-  const clr = $('[data-clear]', box); if (clr) clr.onclick = () => { Object.assign(ST, { q: '', th: '', sec: '', f: {}, cons: [], acc: [], pre: '' }); draw(); };
+  const clr = $('[data-clear]', box); if (clr) clr.onclick = () => { Object.assign(ST, { q: '', th: '', sec: '', f: {}, cons: [], acc: [], ch: {}, pre: '' }); draw(); };
+  $$('[data-ch]', box).forEach(b => b.onclick = () => { const k = b.dataset.ch, v = b.dataset.v; ST.ch = ST.ch || {}; const L = ST.ch[k] || []; ST.ch[k] = L.includes(v) ? L.filter(x => x !== v) : L.concat(v); draw(); });
   $('#s2q', box).oninput = e => { ST.q = e.target.value; clearTimeout(window.__s2t); window.__s2t = setTimeout(() => { draw(); const q = $('#s2q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 250); };
   $('#s2th', box).onchange = e => { ST.th = e.target.value; draw(); }; $('#s2sec', box).onchange = e => { ST.sec = e.target.value; draw(); };
   $('#s2f', box).onclick = () => { ST.open = !ST.open; draw(); };
@@ -234,7 +238,7 @@ function wire(box) {
   $$('[data-grp]', box).forEach(b => b.onclick = () => { const v = b.dataset.grp; ST.hide = ST.hide.includes(v) ? ST.hide.filter(x => x !== v) : ST.hide.concat(v); save(); draw(); });
   $$('thead tr:not(.gr) th[data-k]', box).forEach(th => th.onclick = e => { const k = th.dataset.k, d0 = LOWFIRST.includes(k) || k === 't' ? 1 : -1, i = ST.sort.findIndex(x => x[0] === k);
     if (e.shiftKey) { if (i >= 0) ST.sort[i][1] *= -1; else ST.sort.push([k, d0]); ST.sort = ST.sort.slice(-3); } else ST.sort = i === 0 && ST.sort.length === 1 ? [[k, -ST.sort[0][1]]] : [[k, d0]]; save(); draw(); });
-  if ($('#s2save', box)) $('#s2save', box).onclick = () => { const n = ($('#s2n', box).value || '').trim() || 'My screen ' + (mine().length + 1), M = mine(); M.push({ n, st: { q: ST.q, th: ST.th, sec: ST.sec, f: ST.f, cons: ST.cons, acc: ST.acc, pre: ST.pre, sort: ST.sort } }); try { localStorage.setItem('tw_scr2_saved', JSON.stringify(M.slice(-12))); } catch (e) {} draw(); };
+  if ($('#s2save', box)) $('#s2save', box).onclick = () => { const n = ($('#s2n', box).value || '').trim() || 'My screen ' + (mine().length + 1), M = mine(); M.push({ n, st: { q: ST.q, th: ST.th, sec: ST.sec, f: ST.f, cons: ST.cons, acc: ST.acc, ch: ST.ch, pre: ST.pre, sort: ST.sort } }); try { localStorage.setItem('tw_scr2_saved', JSON.stringify(M.slice(-12))); } catch (e) {} draw(); };
   $$('[data-load]', box).forEach(b => b.onclick = () => { const m = mine()[+b.dataset.load]; if (m) { Object.assign(ST, JSON.parse(JSON.stringify(m.st))); draw(); } });
 }
 function mount() {
