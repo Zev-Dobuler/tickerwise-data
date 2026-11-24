@@ -127,7 +127,7 @@ try { const o = JSON.parse(localStorage.getItem('tw_scr2_st') || 'null'); if (o)
 const save = () => { try { localStorage.setItem('tw_scr2_st', JSON.stringify({ hide: ST.hide, sort: ST.sort })); } catch (e) {} };
 const inB = (v, b) => v != null && (b[1] == null || v >= b[1]) && (b[2] == null || v < b[2]);
 function pass(s, skip) {
-  ['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc'].forEach(k => { if (ST.f[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
+  NOF.forEach(k => { if (ST.f[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
   if (ST.sort && ST.sort.some(x => x[0] !== 't' && !CK[x[0]])) ST.sort = ST.sort.filter(x => x[0] === 't' || CK[x[0]]);
   if (ST.q && !(s.t + ' ' + s.n + ' ' + s.th).toUpperCase().includes(ST.q.toUpperCase())) return false;
   if (ST.th && s.th !== ST.th) return false; if (ST.sec && s.sec !== ST.sec) return false;
@@ -207,7 +207,7 @@ const clrAll = () => { const n = nAct(); return `<button type="button" class="s2
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const mdTh = d => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ''); if (!m) return d || ''; const n = +m[3], sf = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; return MON[+m[2] - 1] + ' ' + n + sf; };
 /* filters dropped from the panel, columns kept (Zev, Nov 24, 2026) */
-const NOF = new Set(['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc']);
+const NOF = new Set(['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc', 'ir', 'b', 'r6m', 'rg1', 'roe', 'inst']);
 function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
   /* fewer filter rows (Zev, Nov 24, 2026): the two analyst filters and Employees sit in the first row with Overview; the table's column groups are unchanged */
