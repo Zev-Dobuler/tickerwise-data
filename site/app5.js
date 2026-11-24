@@ -131,7 +131,7 @@ function targetHist(s) {
   const T = (NX.TH || {})[s.t], P = pxSeries(s.t); if (!T || T.length < 2 || !P) return '';
   const W = 900, H = 300, pl = 56, pr = 120, pt = 16, pb = 28, iw = W - pl - pr, ih = H - pt - pb;
   const d0 = Math.round(new Date(T[0][0] + 'T12:00:00Z') / 864e5), last = P[P.length - 1], d1 = last.d, PP = P.filter(p => p.d >= d0);
-  const dn = x => Math.round(new Date(x + 'T12:00:00Z') / 864e5), pts = T.map(r => [dn(r[0]), r[1], r[2]]), LR = (T[T.length - 1][3] || []).filter(r => r && r[4] > 0);
+  const dn = x => Math.floor(new Date(x + 'T00:00:00Z') / 864e5), pts = T.map(r => [dn(r[0]), r[1], r[2]]), LR = (T[T.length - 1][3] || []).filter(r => r && r[4] > 0);
   const DOTS = LR.filter(r => dn(r[0]) >= d0);
   const vs = PP.map(p => p.c).concat(pts.map(p => p[1]), DOTS.map(r => r[4])), mx = Math.max(...vs) * 1.05, mn = Math.min(...vs) * 0.94;
   const X = d => pl + (d - d0) / ((d1 - d0) || 1) * iw, Y = v => pt + ih - (v - mn) / ((mx - mn) || 1) * ih, F = v => '$' + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
@@ -157,7 +157,7 @@ function targetHist(s) {
     ${src('Month-end averages of each firm\'s latest price target in the 12 months before that date, from MarketBeat rating history (last point = today). The Analyst Upside elsewhere on this page uses TipRanks\' current average; the two services count slightly different analysts', ND.TH)}`, 'th-' + s.t);
 }
 function thBind(t) { const D = (window.__thD || {})[t], svg = document.querySelector(`.th-svg[data-t="${t}"]`); if (!D || !svg || svg.dataset.b) return; svg.dataset.b = 1;
-  const tip = svg.parentNode.querySelector('.th-tip'), xl = svg.querySelector('.th-x'), { pts, PP, LR, d0, d1, W, H, pl, pr, pt, pb } = D, iw = W - pl - pr, dn = x => Math.round(new Date(x + 'T12:00:00Z') / 864e5), X = d => pl + (d - d0) / ((d1 - d0) || 1) * iw, F = v => '$' + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
+  const tip = svg.parentNode.querySelector('.th-tip'), xl = svg.querySelector('.th-x'), { pts, PP, LR, d0, d1, W, H, pl, pr, pt, pb } = D, iw = W - pl - pr, dn = x => Math.floor(new Date(x + 'T00:00:00Z') / 864e5), X = d => pl + (d - d0) / ((d1 - d0) || 1) * iw, F = v => '$' + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
   const rc = r => /buy|outperform|overweight|accumulate|positive/i.test(r) ? '#34D399' : /sell|underperform|underweight|reduce|negative/i.test(r) ? '#F87171' : '#FBBF24';
   const mv = ev => { const r = svg.getBoundingClientRect(), vx = (ev.clientX - r.left) / r.width * W; let p = pts[0]; pts.forEach(q => { if (Math.abs(X(q[0]) - vx) < Math.abs(X(p[0]) - vx)) p = q; });
     const x = X(p[0]); xl.setAttribute('x1', x); xl.setAttribute('x2', x); xl.setAttribute('opacity', .3); const pc = PP.filter(q => q.d <= p[0]).pop(), gap = pc ? (p[1] / pc.c - 1) * 100 : null;
