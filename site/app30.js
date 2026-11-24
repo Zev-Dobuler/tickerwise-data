@@ -82,9 +82,9 @@ function ovOrder() {
   });
 }
 /* bigger hover pop-ups (+2px) on Quarterly Results and Valuation & Cash Flow by Quarter (Forward P/E, Forward P/S, FCF Margin) and the Price Chart (Zev, Nov 24, 2026) */
-const tbcss = document.createElement('style'); tbcss.textContent = `.tw-tip.tw-big{font-size:15px!important}.tw-tip.tw-big b{font-size:16px!important}.tw-tip.tw-big .tw-tip-s{font-size:13.5px!important}`; document.head.appendChild(tbcss);
+const tbcss = document.createElement('style'); tbcss.textContent = `.tw-tip.tw-big{font-size:15px!important}.tw-tip.tw-big b{font-size:16px!important}.tw-tip.tw-big .tw-tip-s{font-size:13.5px!important}.tw-tip.tw-big3{font-size:16px!important}.tw-tip.tw-big3 b{font-size:17px!important}.tw-tip.tw-big3 .tw-tip-s{font-size:14.5px!important}`; document.head.appendChild(tbcss);
 document.addEventListener('mouseover', e => { const d = e.target.closest && (e.target.closest('[data-tip]') || e.target.closest('.px-wrap')); if (!d) return; const c = d.closest('.card'), h = c && (c.querySelector('.card-h h3') || {}).textContent || '', big = d.classList.contains('px-wrap') || /^(Quarterly Results|Valuation & Cash Flow)/.test(h.trim());
-  const set = () => { const t = document.querySelector('.tw-tip'); if (t) t.classList.toggle('tw-big', big); }; set(); setTimeout(set, 0); }, true);
+  const q3 = !d.classList.contains('px-wrap') && big; /* quarterly + valuation pop-ups: +3px (Zev asked twice more) */ const set = () => { const t = document.querySelector('.tw-tip'); if (t) { t.classList.toggle('tw-big', big && !q3); t.classList.toggle('tw-big3', q3); } }; set(); setTimeout(set, 0); }, true);
 /* TEST (Zev, Nov 24, 2026), MU only: a copy of the Price Chart with the Timeline's events laid on it, right under the normal Price Chart.
    The normal Price Chart and Timeline are untouched. To go back: empty PTL_TEST (or delete this block). */
 const PTL_TEST = new Set(['MU']), PTL = { k: 'all' };
@@ -96,8 +96,9 @@ function ptlDraw(box, t, force) {
   if (!force && box.dataset.sig === sig) return; box.dataset.sig = sig;
   const rng = ((orig.querySelector('.px-seg button.on') || {}).textContent || '1Y').trim();
   const K = [['all', 'All'], ['e', '📊 Earnings'], ['a', '🏦 Analysts'], ['i', '👔 Insiders'], ['c', '🏛️ Congress'], ['n', '📰 News']];
-  box.querySelector('.ptl-body').innerHTML = `<div class="ptl-copy">${orig.outerHTML.replace('id="px-' + t + '"', 'id="px-' + t + '-ptl"')}</div><div class="ptl-bar ptl-k" style="margin:10px 0 0"></div><div class="ptl-tip"></div>
-    <p class="muted" style="margin:6px 0 0;font-size:12.5px">Hover a marker for the event. <b style="color:#059669">Green = good for the stock</b>, <b style="color:#DC2626">red = bad</b>, grey = neutral. E earnings · A analyst · I insider · C Congress · N news. The range buttons move the main Price Chart too.</p>`;
+  box.querySelector('.ptl-body').innerHTML = `<div class="ptl-copy">${orig.outerHTML.replace('id="px-' + t + '"', 'id="px-' + t + '-ptl"')}</div><div class="ptl-tip"></div>
+    <p class="muted" style="margin:6px 0 0;font-size:12.5px">Hover a marker for the event; click a news marker (N) to read the article in a new tab. <b style="color:#059669">Green = good for the stock</b>, <b style="color:#DC2626">red = bad</b>, grey = neutral. E earnings · A analyst · I insider · C Congress · N news. The range buttons move the main Price Chart too.</p>`;
+  const top0 = box.querySelector('.ptl-copy .px-top'); if (top0) top0.insertAdjacentHTML('afterend', '<div class="ptl-bar ptl-k" style="margin:8px 0 6px"></div>'); /* event filters right under the range buttons (Zev, Nov 24, 2026) */
   const svg = box.querySelector('.ptl-copy svg'), pg = svg && svg.querySelector('polygon'); if (!pg) return;
   const pts = pg.getAttribute('points').trim().split(/\s+/).map(q => q.split(',').map(Number)).slice(1, -1), N = pts.length; let D = [];
   const S = ((window.TWX || {}).pxSeries ? window.TWX.pxSeries(t) || [] : []).filter(p => p && p.c > 0);
@@ -111,8 +112,8 @@ function ptlDraw(box, t, force) {
     return `<g class="ptl-ev" data-i="${e.i}" style="cursor:pointer"><line x1="${x}" x2="${x}" y1="${y + 7}" y2="${yb}" stroke="${e.c}" stroke-width="1.2" opacity=".6"/><circle cx="${x}" cy="${yb}" r="2.6" fill="${e.c}"/><circle cx="${x}" cy="${y}" r="7.5" fill="${e.c}" stroke="#fff" stroke-width="1.8"/><text x="${x}" y="${y + 3.4}" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" pointer-events="none">${e.l}</text></g>`; }).join('');
   svg.appendChild(g);
   const tip = box.querySelector('.ptl-tip'), bx = box.querySelector('.ptl-body');
-  box.querySelectorAll('.ptl-ev').forEach(el => { const show = ev => { ev.stopPropagation(); const e = E[+el.dataset.i], br = bx.getBoundingClientRect(); tip.innerHTML = `<b>${new Date(e.d * 864e5).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</b><span class="ev" style="--c:${e.c}">${e.txt.replace(/</g, '&lt;')}</span>`; tip.style.display = 'block'; tip.style.left = Math.min(br.width - 300, Math.max(0, ev.clientX - br.left + 14)) + 'px'; tip.style.top = Math.max(0, ev.clientY - br.top - 10) + 'px'; };
-    el.addEventListener('pointerenter', show); el.addEventListener('pointermove', show); el.addEventListener('click', show); el.addEventListener('pointerleave', () => tip.style.display = 'none'); });
+  box.querySelectorAll('.ptl-ev').forEach(el => { const show = ev => { ev.stopPropagation(); const e = E[+el.dataset.i], br = bx.getBoundingClientRect(); tip.innerHTML = `<b>${new Date(e.d * 864e5).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</b><span class="ev" style="--c:${e.c}">${e.txt.replace(/</g, '&lt;')}</span>${e.u ? `<span style="display:block;margin-top:4px;color:#7FE3FF;font-weight:700">${(e.src || 'News').replace(/</g, '&lt;')} · click to read the full article ↗</span>` : ''}`; tip.style.display = 'block'; tip.style.left = Math.min(br.width - 300, Math.max(0, ev.clientX - br.left + 14)) + 'px'; tip.style.top = Math.max(0, ev.clientY - br.top - 10) + 'px'; };
+    el.addEventListener('pointerenter', show); el.addEventListener('pointermove', show); el.addEventListener('click', ev => { const e = E[+el.dataset.i]; if (e && e.u) window.open(e.u, '_blank', 'noopener'); else show(ev); }); el.addEventListener('pointerleave', () => tip.style.display = 'none'); });
   box.querySelectorAll('.ptl-k button').forEach(b => b.onclick = () => { PTL.k = b.dataset.k; ptlDraw(box, t, 1); });
   /* the same hover pop-up as the Price Chart (date, close and day change, 50-day, 200-day, volume, RSI), at the bigger 15px size */
   if (D.length) { const byD = {}; S.forEach((p, i) => { byD[Math.round(p.d)] = [p, S[i - 1]]; }); const NS = 'http://www.w3.org/2000/svg', vb = svg.viewBox.baseVal, hl = document.createElementNS(NS, 'line'), dot = document.createElementNS(NS, 'circle');
