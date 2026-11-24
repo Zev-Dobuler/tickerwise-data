@@ -38,7 +38,9 @@ const C = [
   ['d1', '1 Day', 'Overview', s => (PX[s.t] || [])[1], v => pctc(v, 1), cuts([-5, -2, 0, 2, 5], '%')],
   ['mcap', 'Market Cap', 'Overview', s => FN(s, 'Market Cap') || (((NX.IX || {}).T || {})[s.t] ? NX.IX.T[s.t][2] * 1e9 : null), cap, [['Under $2B', null, 2e9], ['$2B to $10B', 2e9, 1e10], ['$10B to $50B', 1e10, 5e10], ['$50B to $200B', 5e10, 2e11], ['$200B to $1T', 2e11, 1e12], ['Over $1T', 1e12, null]]],
   ['th', 'Theme', 'Overview', s => s.th, txt],
+  ['sec', 'Sector', 'Overview', s => s.sec || null, v => v ? esc(v) : '<span class="muted">—</span>'],
   ['ws', 'Tickerwise Score', 'Scores', s => s.ws, sc10, [['8 to 10', 8, 11], ['6 to 7', 6, 8], ['4 to 5', 4, 6], ['1 to 3', 0, 4]]],
+  ['zev', 'Zev Score', 'Scores', s => FN(s, 'Zev Score'), v => v == null ? '<span class="muted">—</span>' : sc100(v), S100], ['bz', 'Buy-Zone Score', 'Scores', s => { const T = s.tech || {}, u = FN(s, 'Analyst Price Target %'), pg = num((s.val || {}).peg); const f = [T.off != null && T.off <= -30, T.v200 != null && T.v200 < 0, T.rsi != null && T.rsi <= 30, u != null && u >= 30, pg != null && pg > 0 && pg <= 1]; return T.off == null && T.v200 == null ? null : f.filter(Boolean).length; }, v => v == null ? '<span class="muted">—</span>' : `<b style="display:inline-block;width:22px;height:22px;line-height:22px;border-radius:50%;background:${v >= 3 ? '#C6EFCE' : v === 2 ? '#FFF2CC' : '#EEF2F7'};color:${v >= 3 ? '#0A6B3B' : '#334155'}" title="One point each: 30%+ off the 52-week high, below the 200-day average, RSI 30 or lower, analyst upside 30%+, PEG 1 or lower">${v}</b>`, [['3 to 5', 3, 6], ['2', 2, 3], ['1', 1, 2], ['0', 0, 1]]],
   ['zk', 'Zacks Rank', 'Scores', s => FN(s, 'Zacks Score'), zr, [['1 Strong Buy', 1, 2], ['2 Buy', 2, 3], ['3 Hold', 3, 4], ['4 Sell', 4, 5], ['5 Strong Sell', 5, 6]], 1],
   ['smart', 'Smart Score', 'Scores', s => FN(s, 'Smart Score'), v => n1(v), [['8 to 10', 8, 11], ['6 to 7', 6, 8], ['4 to 5', 4, 6], ['1 to 3', 0, 4]]],
   ['vgm', 'Zacks Style (VGM)', 'Scores', s => ZS(s.t).vgm, grade],
@@ -56,6 +58,7 @@ const C = [
   ['peg', 'PEG', 'Valuation', s => num(s.val.peg), v => v == null ? '<span class="muted">—</span>' : v <= 0 ? '<span class="muted">n/m</span>' : `<span class="${v < 1 ? 'up' : v > 2.5 ? 'dn' : ''}">${v.toFixed(2)}</span>`, [['Under 1', 0.001, 1], ['1 to 2', 1, 2], ['2 to 3', 2, 3], ['Over 3', 3, null]], 1],
   ['ps', 'P/S', 'Valuation', s => num(s.val.ps), mult, [['Under 2x', 0.001, 2], ['2x to 5x', 2, 5], ['5x to 10x', 5, 10], ['10x to 20x', 10, 20], ['Over 20x', 20, null]], 1],
   ['fps', 'Forward P/S', 'Valuation', s => FN(s, 'Forward P/S'), mult, [['Under 2x', 0.001, 2], ['2x to 5x', 2, 5], ['5x to 10x', 5, 10], ['10x to 20x', 10, 20], ['Over 20x', 20, null]], 1],
+  ['pec', 'P/E Compression', 'Valuation', s => FN(s, 'P/E Growth'), v => pctc(v), cuts([-40, -20, 0], '%')], ['psc', 'P/S Compression', 'Valuation', s => FN(s, 'P/S Compression'), v => pctc(v), cuts([-40, -20, 0], '%')],
   ['pb', 'Price/Book', 'Valuation', s => num(QS(s.t).pb), mult, [['Under 1x', 0.001, 1], ['1x to 3x', 1, 3], ['3x to 10x', 3, 10], ['Over 10x', 10, null]], 1],
   ['pfcf', 'Price/FCF', 'Valuation', s => num(QS(s.t).pfcf), mult, MULT, 1], ['eve', 'EV/EBITDA', 'Valuation', s => num(QS(s.t).eve), mult, MULT, 1],
   ['rg1', 'Revenue Growth 1Y', 'Revenue', s => FN(s, 'Revenue 1Y Growth'), v => pctc(v), GROW], ['rg', 'Revenue Y/Y (Last Qtr)', 'Revenue', s => num(s.rg), v => pctc(v), GROW], ['rfc', 'Revenue Fwd 1Y', 'Revenue', s => FN(s, 'Revenue Forward 1Y CAGR'), v => pctc(v), GROW],
@@ -63,6 +66,7 @@ const C = [
   ['gm', 'Gross Margin', 'Profitability', s => FN(s, 'Gross Margin') != null ? FN(s, 'Gross Margin') : num(s.mg.gross), v => pctn(v), MARG], ['om', 'Operating Margin', 'Profitability', s => num(s.mg.op), v => pctn(v), MARG],
   ['nm', 'Net Margin', 'Profitability', s => num(s.mg.net), v => pctn(v), MARG], ['fcf', 'FCF Margin', 'Profitability', s => num(s.mg.fcf), v => pctn(v), MARG],
   ['roe', 'ROE', 'Profitability', s => num(QS(s.t).roe), v => pctn(v), cuts([0, 10, 20, 40], '%')], ['roic', 'ROIC', 'Profitability', s => num(QS(s.t).roic), v => pctn(v), cuts([0, 10, 20, 40], '%')],
+  ['emp', 'Employees', 'Profitability', s => FN(s, 'Total Employees'), v => v == null ? '<span class="muted">—</span>' : (+v).toLocaleString('en-US'), [['100,000+', 100000, null], ['10,000 to 99,999', 10000, 100000], ['1,000 to 9,999', 1000, 10000], ['Under 1,000', null, 1000]]],
   ['de', 'Debt/Equity', 'Financial Health', s => num(QS(s.t).de), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 2 ? 'dn' : ''}">${v.toFixed(2)}</span>`, [['Under 0.3', null, 0.3], ['0.3 to 1', 0.3, 1], ['1 to 2', 1, 2], ['Over 2', 2, null]], 1],
   ['cr', 'Current Ratio', 'Financial Health', s => num(QS(s.t).cr), v => n1(v, 2), [['Under 1', null, 1], ['1 to 2', 1, 2], ['Over 2', 2, null]]],
   ['ic', 'Interest Coverage', 'Financial Health', s => num(QS(s.t).ic), v => v == null ? '<span class="muted">—</span>' : v > 999 ? '999+' : v.toFixed(1) + 'x'],
@@ -71,11 +75,13 @@ const C = [
   ['dil', 'Share Change 1Y', 'Financial Health', s => num(QS(s.t).sh1), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 2 ? 'dn' : v < 0 ? 'up' : ''}">${sgn(v, 1)}</span>`, [['Buying back (under 0%)', null, 0], ['0% to 2%', 0, 2], ['2% to 10% (dilution)', 2, 10], ['Over 10%', 10, null]], 1],
   ['es', 'Earnings Signal', 'Earnings', s => num(((s.earn || {}).x || {}).s), v => v == null ? '<span class="muted">—</span>' : sc100(v), S100],
   ['epsg', 'EPS Growth (3–5Y Est.)', 'Earnings', s => FN(s, 'EPS Growth'), v => pctc(v), GROW], ['e3', 'EPS 3Y CAGR', 'Earnings', s => num(QS(s.t).e3), v => pctc(v), GROW], ['nig', 'Net Income 1Y', 'Earnings', s => FN(s, 'Net Income 1Y Growth'), v => pctc(v), GROW], ['rvp', 'EPS Revisions (90D)', 'Earnings', s => num(((s.earn || {}).x || {}).rvp), v => pctc(v, 1), cuts([-5, 0, 5], '%')],
-  ['l8', 'Beat Rate (8Q)', 'Earnings', s => num(s.earn.l8), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]],
+  ['l8', 'Last 8 EPS Beat', 'Earnings', s => num(s.earn.l8), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]],
   ['stk', 'Beat Streak', 'Earnings', s => num(s.earn.streak), v => n1(v), [['8+ quarters', 8, null], ['4 to 7', 4, 8], ['1 to 3', 1, 4], ['None', 0, 1]]],
+  ['brec', 'Beat Record (EPS + Revenue)', 'Earnings', s => num(((s.earn || {}).x || {}).cb), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]], ['l8r', 'Last 8 Revenue Beat', 'Earnings', s => num((s.earn || {}).rl8), v => v == null ? '<span class="muted">—</span>' : v + '%', [['100%', 100, 101], ['75% to 99%', 75, 100], ['50% to 74%', 50, 75], ['Under 50%', null, 50]]],
   ['gd', 'Guidance', 'Earnings', s => ((s.earn || {}).x || {}).gd, v => v ? `<span style="white-space:nowrap" class="${/Above|Raised/.test(v) ? 'up' : /Below|Lowered/.test(v) ? 'dn' : ''}">${esc(v.replace(/^New: /, ''))}</span>` : '<span class="muted">—</span>'],
   ['nx', 'Next Earnings', 'Earnings', s => days(s.earn.next), (v, s) => v == null ? '<span class="muted">—</span>' : `<span style="white-space:nowrap;${v >= 0 && v <= 14 ? 'background:#FFE45C;padding:1px 6px;border-radius:5px' : ''}">${esc(s.earn.next)}${v >= 0 ? ` <span class="muted">(${v}d)</span>` : ''}</span>`, [['Next 7 days', 0, 8], ['8 to 30 days', 8, 31], ['31 to 60 days', 31, 61], ['Over 60 days', 61, null]], 1],
   ['rday', 'Avg Reaction Day', 'Earnings', s => avg(mv(s).map(r => r[2])), v => pctc(v, 1), cuts([-5, -2, 0, 2, 5], '%')],
+  ['pre7', 'Avg 7 Days Before', 'Earnings', s => avg(mv(s).map(r => r[1])), v => pctc(v, 1), cuts([-5, 0, 5], '%')],
   ['rsize', 'Avg Move Size', 'Earnings', s => avg(mv(s).map(r => r[2] == null ? null : Math.abs(r[2]))), v => v == null ? '<span class="muted">—</span>' : v.toFixed(1) + '%', [['Under 3%', null, 3], ['3% to 6%', 3, 6], ['6% to 10%', 6, 10], ['Over 10%', 10, null]]],
   ['r30', 'Avg 30 Days After', 'Earnings', s => avg(mv(s).map(r => r[3])), v => pctc(v, 1), cuts([-10, 0, 10], '%')],
   ['rup', 'Reaction Days Up', 'Earnings', s => { const m = mv(s).filter(r => r[2] != null); return m.length ? m.filter(r => r[2] > 0).length : null; }, (v, s) => v == null ? '<span class="muted">—</span>' : v + ' of ' + mv(s).filter(r => r[2] != null).length, [['6 to 8', 6, 9], ['4 to 5', 4, 6], ['0 to 3', 0, 4]]],
@@ -167,6 +173,7 @@ const css = `
 #s2 .s2-wrap{overflow:auto;max-height:78vh;border:1px solid #E2E8F0;border-radius:14px;background:#fff}
 #s2 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
 #s2 th,#s2 td{padding:8px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;text-align:right}
+#s2 th,#s2 td{text-align:center;vertical-align:middle}#s2 thead tr:not(.gr) th{white-space:normal;line-height:1.2;min-width:58px;max-width:92px;vertical-align:bottom}
 #s2 thead th{position:sticky;top:26px;background:#F8FAFC;z-index:3;font:700 11.5px 'Inter',sans-serif;color:#475569;cursor:pointer;user-select:none;border-bottom:1px solid #E2E8F0}
 #s2 thead tr.gr th{top:0;height:26px;padding:4px 10px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#2F6BFF;text-align:left;border-left:2px solid #fff;cursor:default}
 #s2 th:first-child,#s2 td:first-child{position:sticky;left:0;background:#fff;z-index:2;text-align:left;box-shadow:1px 0 0 #E2E8F0}
