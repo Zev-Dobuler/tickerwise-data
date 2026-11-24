@@ -125,6 +125,7 @@ try { const o = JSON.parse(localStorage.getItem('tw_scr2_st') || 'null'); if (o)
 const save = () => { try { localStorage.setItem('tw_scr2_st', JSON.stringify({ hide: ST.hide, sort: ST.sort })); } catch (e) {} };
 const inB = (v, b) => v != null && (b[1] == null || v >= b[1]) && (b[2] == null || v < b[2]);
 function pass(s, skip) {
+  ['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc'].forEach(k => { if (ST.f[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
   if (ST.q && !(s.t + ' ' + s.n + ' ' + s.th).toUpperCase().includes(ST.q.toUpperCase())) return false;
   if (ST.th && s.th !== ST.th) return false; if (ST.sec && s.sec !== ST.sec) return false;
   if (ST.cons.length && !ST.cons.includes(g(s, 'cons') || 'No rating')) return false;
@@ -202,10 +203,12 @@ const clrAll = () => { const n = nAct(); return `<button type="button" class="s2
 /* dates as "July 5th", no year (Zev, Nov 24, 2026: "it's pretty obvious what the year is") */
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const mdTh = d => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ''); if (!m) return d || ''; const n = +m[3], sf = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; return MON[+m[2] - 1] + ' ' + n + sf; };
+/* filters dropped from the panel, columns kept (Zev, Nov 24, 2026) */
+const NOF = new Set(['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc']);
 function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
   /* fewer filter rows (Zev, Nov 24, 2026): the two analyst filters and Employees sit in the first row with Overview; the table's column groups are unchanged */
-  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => fgOf(c) === gn && c[5]).sort((x, y) => (x[0] === 'd1' ? -1 : 0) - (y[0] === 'd1' ? -1 : 0)); const ng = L.reduce((a, c) => a + (ST.f[c[0]] || []).length, 0); return L.length ? `<div class="s2-g"><h5>${esc(FH[gn] || gn)}${ng ? ` <button type="button" class="s2-clrg" data-clrg="${esc(gn)}">✕ Clear ${ng}</button>` : ''}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
+  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => fgOf(c) === gn && c[5] && !NOF.has(c[0])).sort((x, y) => (x[0] === 'd1' ? -1 : 0) - (y[0] === 'd1' ? -1 : 0)); const ng = L.reduce((a, c) => a + (ST.f[c[0]] || []).length, 0); return L.length ? `<div class="s2-g"><h5>${esc(FH[gn] || gn)}${ng ? ` <button type="button" class="s2-clrg" data-clrg="${esc(gn)}">✕ Clear ${ng}</button>` : ''}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
     <div class="s2-pills">${(() => { const np = ST.cons.length + ST.acc.length + Object.values(ST.ch || {}).reduce((a, x) => a + x.length, 0); return np ? `<div style="justify-content:flex-end"><button type="button" class="s2-clrg" data-clrp>✕ Clear ${np} below</button></div>` : ''; })()}<div><span class="l">Analyst consensus</span>${cs.map(x => `<button type="button" data-cons="${x}" class="${ST.cons.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     <div><span class="l">Accelerating growth</span>${ac.map(x => `<button type="button" data-acc="${x}" class="${ST.acc.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     ${CHIPS.map(([k, lab, V]) => { const have = new Set(S.map(s => String(g(s, k) || 'None Given').toLowerCase())); const vals = V.filter(v => have.has(v.toLowerCase())); return vals.length ? `<div><span class="l">${esc(lab)}</span>${vals.map(x => `<button type="button" data-ch="${k}" data-v="${esc(x)}" class="${((ST.ch || {})[k] || []).includes(x) ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''; }).join('')}</div></div>`;
