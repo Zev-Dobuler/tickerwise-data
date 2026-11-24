@@ -45,9 +45,19 @@ const ORD = [[/^(r2-wch)$/, 1], [/^(ai-box)$/, 2], [/^Price Chart \+ Timeline/, 
 const OVM = [
   ['moves', "What's Happening", 40, [["What's Happening", /^What's Happening/], ['Why Is It Moving?', /^Why Is It Moving/]]],
   ['returns', 'Returns', 120, [['Vs the S&P 500', /^Returns vs the S&P/], ['Performance', /^Performance/]]],
-  ['peers', 'Peers', 170, [['Peer Table', /^(r3-peer)$/], ['Compare With Similar Stocks', /^Compare With Similar/], ['Stocks Like This', /^Stocks Like This/]]],
-  ['community', 'Community', 250, [['Live Community', /^Live Community/], ['Discussions', /^Community$/]]]], OVS = {};
+  ['peers', 'Peers', 170, [['Peer Table', /^(r3-peer)$/], ['Compare With Similar Stocks', /^Compare With Similar/], ['Stocks Like This', /^Stocks Like This/]]]], OVS = {};
 const ovcss = document.createElement('style'); ovcss.textContent = `.ovm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:-8px}.ovm b{font:800 18px Inter,sans-serif;color:#0B1B3F;margin-right:6px}.ovm button{border:1.5px solid var(--line,#E2E8F0);background:#fff;border-radius:999px;padding:6px 13px;font:700 13px Inter,sans-serif;color:#0B1B3F;cursor:pointer;white-space:nowrap}.ovm button.on{background:#0B1B3F;border-color:#0B1B3F;color:#fff}.ovm button:hover:not(.on){border-color:#2F6BFF}@media(max-width:600px){.ovm b{width:100%}}`; document.head.appendChild(ovcss);
+/* Community on the Overview (Zev, Nov 24, 2026): one Community section. Live Community is switched off; its "This week: up or down?" poll
+   moves to the top of Community, with a "Your view" Bullish / Bearish / Neutral pick. Posting happens in the discussion itself. */
+function comMerge() {
+  const c = $('#cm-teaser'), h = c && $('.card-h', c); if (!c || !h) return; const t = (location.hash.split('/')[2] || '').toUpperCase().split(/[?#]/)[0];
+  const poll = $('#tz-poll'); if (poll && poll.parentElement !== c) h.after(poll);
+  if (!$('.cm-view', c)) { const k = 'tw-view-' + t; let v = ''; try { v = localStorage.getItem(k) || ''; } catch (e) {}
+    const el = document.createElement('div'); el.className = 'cm-view'; el.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 4px;font:600 13.5px Inter,sans-serif;color:#0B1B3F';
+    const draw = () => { el.innerHTML = `<b style="margin-right:4px">Your view</b>` + [['bull', '🐂 Bullish'], ['bear', '🐻 Bearish'], ['neu', 'Neutral']].map(([k2, n]) => `<button type="button" data-v="${k2}" style="border:1.5px solid ${v === k2 ? '#0B1B3F' : 'var(--line,#E2E8F0)'};background:${v === k2 ? '#0B1B3F' : '#fff'};color:${v === k2 ? '#fff' : '#0B1B3F'};border-radius:999px;padding:5px 12px;font:700 13px Inter,sans-serif;cursor:pointer">${n}</button>`).join('') + (v ? `<a href="#/stock/${t}/community" style="font-weight:700;color:#2F6BFF;margin-left:4px">Saved. Tell everyone why in the discussion →</a>` : '');
+      $$('button', el).forEach(b => b.onclick = () => { v = v === b.dataset.v ? '' : b.dataset.v; try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} draw(); }); };
+    draw(); ($('#tz-poll', c) || h).after(el); }
+}
 function ovOrder() {
   const m = $('#app .sp-body > .main'); if (!m) return; const parts = location.hash.replace(/^#\/?/, '').split(/[/?]/), ov = parts[0] === 'stock' && (!parts[2] || parts[2] === 'overview');
   if (!ov) { $$('.ovm', m).forEach(e => e.remove()); $$('[data-ovo]', m).forEach(e => { e.style.order = ''; if (e.dataset.ovo === 'w' || e.dataset.ovh) e.style.display = ''; delete e.dataset.ovo; delete e.dataset.ovh; }); return; }
@@ -57,7 +67,7 @@ function ovOrder() {
   let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; k.dataset.ovl = key + '|' + ht; });
   /* removed from the Overview (Zev, Nov 24, 2026), switched off not deleted: watchers line while it reads 0, the rotating Pro teaser,
      Prediction Markets, The Big Picture, the promoted Pick 5 ad. ETFs That Own It was kept. */
-  flat.forEach(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); if (key === 'r2-wch') { const w = [...k.children].find(c => /members? watching/.test(c.textContent) && !/Share/.test(c.textContent)); if (w) w.style.display = /\b0 members watching/.test(w.textContent) ? 'none' : ''; } const off = (k.classList.contains('pro-t') && k.id !== 'ai-box') || key === 'r2-pm' || /^The Big Picture/.test(ht) || key === 'r3-ad';
+  flat.forEach(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); if (key === 'r2-wch') { const w = [...k.children].find(c => /members? watching/.test(c.textContent) && !/Share/.test(c.textContent)); if (w) w.style.display = /\b0 members watching/.test(w.textContent) ? 'none' : ''; } const off = (k.classList.contains('pro-t') && k.id !== 'ai-box') || key === 'r2-pm' || /^The Big Picture/.test(ht) || key === 'r3-ad' || key === 'tz-com';
     if (off) { if (k.style.display !== 'none') { k.style.display = 'none'; k.dataset.ovh = 'x'; } } else if (k.dataset.ovh === 'x') { k.style.display = ''; delete k.dataset.ovh; } });
   /* merged sections (Zev, Nov 24, 2026): one title with tabs, one section showing at a time */
   OVM.forEach(([gk, title, o, tabs]) => {
@@ -117,7 +127,7 @@ function ptlMount() {
   const el = document.createElement('div'); el.className = 'card'; el.id = 'ptl'; el.innerHTML = `<div class="card-h"><h3>Price Chart + Timeline<span class="tbadge">TEST · ${t} ONLY</span></h3><span class="muted">daily closes with every event pinned to the price</span></div><div class="ptl-body"></div>`;
   m.appendChild(el); ptlDraw(el, t);
 }
-const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ptlMount(); ovOrder(); };
+const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ptlMount(); comMerge(); ovOrder(); };
 let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; tick(); }, 80); }).observe(app, { childList: true, subtree: true });
 window.addEventListener('hashchange', () => { setTimeout(tick, 60); setTimeout(tick, 600); }); setTimeout(tick, 300);
 })();
