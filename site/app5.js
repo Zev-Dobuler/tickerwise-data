@@ -2,10 +2,10 @@
    Superinvestors, Congress Trades, ETFs That Own This, Saved Screens, Pricing Plans and more Pro banners. Same data and layout for every stock. ---------- */
 /* RETIRED SECTIONS (Zev, Nov 24, 2026): switched off, code kept. To restore one, remove its key from TW_OFF.
    Log with snapshots: project doc claude/tickerwise-retired-sections.md */
-window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway', 'bots', 'widgets', 'brokers', 'legendquiz', 'showcase'];
+window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway', 'bots', 'widgets', 'brokers', 'legendquiz', 'showcase', 'dna'];
 (function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] }, subway: { h: [], t: [] }, bots: { h: ['#/bots'], t: ['Strategy Bots', 'strategy bot'] }, widgets: { h: ['#/widgets', '#/embed'], t: ['Score Widgets'] }, brokers: { h: ['#/brokers'], t: ['Broker Comparison'] }, legendquiz: { h: ['#/legend-quiz'], t: ['Legend Quiz', 'Which Legend Are You'] },
     /* hidden, not retired: Motion Gallery still opens at #/showcase for Zev, but no link to it is shown anywhere */
-    showcase: { h: [], x: ['#/showcase'], t: ['Motion Gallery'] } };
+    showcase: { h: [], x: ['#/showcase'], t: ['Motion Gallery'] }, dna: { h: [], t: [] } };
   const on = () => (window.TW_OFF || []).filter(k => R[k]);
   window.twOff = k => on().includes(k);
   const hm = (h, L) => L.some(x => h === x || h.indexOf(x + '/') === 0 || h.indexOf(x + '?') === 0);
