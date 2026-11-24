@@ -69,6 +69,12 @@ dpub = {k: alld[k] for k in MARKET if k in alld}
 dpub['options'] = [r for r in alld['options'] if r.get('k') != 'h' or r.get('t') in ('SPY', 'QQQ')]
 dpriv = alld
 
+# The site's card formatter treats a percent value between -3 and 3 as a fraction (an old Excel habit) and multiplies it by 100,
+# so a 3% net margin showed as 300%. Send those small values as ready-made text instead (same rounding the card uses).
+for _t, _o in F.items():
+    for _k in ('EPS Growth', 'Revenue 1Y Growth', 'Revenue Forward 1Y CAGR', 'Y/Y Revenue Growth', 'Operating Margin', 'Net Profit Margin', 'Net Income 1Y Growth', 'Free Cash Flow Margin'):
+        _a = _o.get(_k)
+        if _a and isinstance(_a[0], (int, float)) and abs(_a[0]) <= 3: _a[0] = '%d%%' % round(_a[0])
 pub = {'asof': meta['asof'], 'sectors': meta['sectors'], 'RK': meta['RK'], 'R': rows, 'X': X, 'BENCH': xj['BENCH'], 'MK': MK, 'F': F}
 # Analyst forecast block (same TipRanks fields for every stock): target range, rating counts, latest actions
 _D = '/home/claude/tw2/data/'
