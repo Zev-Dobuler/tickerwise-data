@@ -55,6 +55,10 @@ function ovOrder() {
   [...W, $('#tw-sc'), $('#r3-st')].forEach(w => { if (w && w !== m && w.parentElement && (w.parentElement === m || w.parentElement.dataset.ovo === 'w')) { w.style.display = 'contents'; w.dataset.ovo = 'w'; } });
   const flat = []; const walk = el => [...el.children].forEach(k => k.dataset.ovo === 'w' ? walk(k) : k.classList.contains('ovm') ? 0 : flat.push(k)); walk(m);
   let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; k.dataset.ovl = key + '|' + ht; });
+  /* removed from the Overview (Zev, Nov 24, 2026), switched off not deleted: watchers line while it reads 0, the rotating Pro teaser,
+     Prediction Markets, The Big Picture, the promoted Pick 5 ad. ETFs That Own It was kept. */
+  flat.forEach(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); const off = (key === 'r2-wch' && /\b0 members watching/.test(k.textContent)) || (key === 'pro-t' && !/^(ai-box)$/.test(k.id)) || key === 'r2-pm' || /^The Big Picture/.test(ht) || key === 'r3-ad';
+    if (off) { if (k.style.display !== 'none') { k.style.display = 'none'; k.dataset.ovh = 'x'; } } else if (k.dataset.ovh === 'x') { k.style.display = ''; delete k.dataset.ovh; } });
   /* merged sections (Zev, Nov 24, 2026): one title with tabs, one section showing at a time */
   OVM.forEach(([gk, title, o, tabs]) => {
     const mem = tabs.map(([n, rx]) => flat.find(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); return /\(/.test(rx.source) ? rx.test(key) : rx.test(ht); }));
