@@ -63,7 +63,7 @@ function ovOrder() {
     if (!b) { b = document.createElement('div'); b.className = 'ovm'; b.id = 'ovm-' + gk; m.prepend(b); }
     const html = `<b>${title}</b>` + have.map(x => `<button type="button" data-t="${x[0]}" class="${x[0] === cur ? 'on' : ''}">${x[0]}</button>`).join('');
     if (b.dataset.h !== html) { b.innerHTML = html; b.dataset.h = html; $$('button', b).forEach(x => x.onclick = () => { OVS[gk] = x.dataset.t; ovOrder(); }); }
-    b.style.order = o; have.forEach(([n, k]) => { k.style.order = o; const show = n === cur; if (show) { if (k.dataset.ovh) { k.style.display = ''; delete k.dataset.ovh; } } else if (!k.dataset.ovh) { k.style.display = 'none'; k.dataset.ovh = '1'; } });
+    b.style.order = o; have.forEach(([n, k]) => { k.style.order = o; const h3 = k.querySelector('.card-h h3'); if (h3 && !h3.dataset.ovt) { h3.dataset.ovt = '1'; h3.style.display = 'none'; } const show = n === cur; if (show) { if (k.dataset.ovh) { k.style.display = ''; delete k.dataset.ovh; } } else if (!k.dataset.ovh) { k.style.display = 'none'; k.dataset.ovh = '1'; } });
   });
 }
 const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ovOrder(); };
