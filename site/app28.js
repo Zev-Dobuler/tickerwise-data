@@ -194,7 +194,9 @@ function ddHTML(c) {
 }
 function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
-  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => c[2] === gn && c[5]); return L.length ? `<div class="s2-g"><h5>${esc(gn)}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
+  /* fewer filter rows (Zev, Nov 24, 2026): the two analyst filters and Employees sit in the first row with Overview; the table's column groups are unchanged */
+  const FG = { up: 'Overview', na: 'Overview', emp: 'Overview' }, FH = { Overview: 'Overview · Analysts · Size' };
+  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => (FG[c[0]] || c[2]) === gn && c[5]); return L.length ? `<div class="s2-g"><h5>${esc(FH[gn] || gn)}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
     <div class="s2-pills"><div><span class="l">Analyst consensus</span>${cs.map(x => `<button type="button" data-cons="${x}" class="${ST.cons.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     <div><span class="l">Accelerating growth</span>${ac.map(x => `<button type="button" data-acc="${x}" class="${ST.acc.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     ${CHIPS.map(([k, lab, V]) => { const have = new Set(S.map(s => String(g(s, k) || 'None Given').toLowerCase())); const vals = V.filter(v => have.has(v.toLowerCase())); return vals.length ? `<div><span class="l">${esc(lab)}</span>${vals.map(x => `<button type="button" data-ch="${k}" data-v="${esc(x)}" class="${((ST.ch || {})[k] || []).includes(x) ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''; }).join('')}</div></div>`;
