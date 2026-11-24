@@ -47,7 +47,8 @@ for q in L('quotes'):
     if q.get('next_earnings') and q['ticker'] in F: F[q['ticker']]['Next ER Date'] = [q['next_earnings'], None, None]
 # Revenue Fwd 2Y CAGR (Zev, Nov 24, 2026): yearly growth rate from the last 12 months of sales (Fiscal.ai quarters) to analysts'
 # next-fiscal-year revenue estimate (Yahoo), annualised over the real time between the two. A quarter that is less than 60% of the
-# other three is treated as a data error and rebuilt from the same quarter a year earlier and its reported Y/Y growth.
+# other three is treated as a data error and rebuilt from the same quarter a year earlier and its reported Y/Y growth (or, when that one
+# is broken too, the middle of the other three quarters).
 import datetime as _dt
 def _rows(r):
     x = r.get('rows'); return json.loads(x) if isinstance(x, str) else (x or [])
@@ -66,8 +67,9 @@ def _ttm(R):
     for i, q in enumerate(A4):
         others = sorted(x['rev'] for j, x in enumerate(A4) if j != i); med = others[1]
         if q['rev'] < 0.6 * med:
-            if prev and prev[i].get('rev') and q.get('yoy') is not None: out.append(prev[i]['rev'] * (1 + q['yoy'] / 100))
-            else: return None
+            po = sorted(x.get('rev') or 0 for j, x in enumerate(prev) if j != i) if len(prev) == 4 else []
+            if prev and prev[i].get('rev') and q.get('yoy') is not None and po and prev[i]['rev'] >= 0.6 * po[1]: out.append(prev[i]['rev'] * (1 + q['yoy'] / 100))
+            else: out.append(med)  # the year-ago quarter is broken too (e.g. Costco's May quarter on Fiscal.ai): use the middle of the other three
         else: out.append(q['rev'])
     return sum(out) * 1e6
 for _t, _y in _YV.items():
