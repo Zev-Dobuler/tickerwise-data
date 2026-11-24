@@ -96,6 +96,8 @@ const C = [
   ['sh', 'Short % Float', 'Ownership', s => num((XX(s.t).sh || [])[0]), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 10 ? 'dn' : ''}">${v.toFixed(1)}%</span>`, [['Under 3%', null, 3], ['3% to 10%', 3, 10], ['10% to 20%', 10, 20], ['Over 20%', 20, null]]],
   ['dtc', 'Days to Cover', 'Ownership', s => num((XX(s.t).sh || [])[1]), v => n1(v, 1), [['Over 5 days', 5, null], ['2 to 5 days', 2, 5], ['Under 2 days', null, 2]]]
 ];
+/* columns removed (Zev, Nov 24, 2026): Reaction Days Up, Net Income 1Y, Current Ratio */
+['rup', 'nig', 'cr'].forEach(k => { const i = C.findIndex(c => c[0] === k); if (i >= 0) C.splice(i, 1); });
 const CK = {}; C.forEach(c => { CK[c[0]] = c; });
 const GROUPS = [...new Set(C.map(c => c[2]))];
 /* ---------- ready-made screens ---------- */
@@ -126,6 +128,7 @@ const save = () => { try { localStorage.setItem('tw_scr2_st', JSON.stringify({ h
 const inB = (v, b) => v != null && (b[1] == null || v >= b[1]) && (b[2] == null || v < b[2]);
 function pass(s, skip) {
   ['pb', 'cr', 'e3', 'nig', 'pre7', 'r30', 'rup', 'dtc'].forEach(k => { if (ST.f[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
+  if (ST.sort && ST.sort.some(x => x[0] !== 't' && !CK[x[0]])) ST.sort = ST.sort.filter(x => x[0] === 't' || CK[x[0]]);
   if (ST.q && !(s.t + ' ' + s.n + ' ' + s.th).toUpperCase().includes(ST.q.toUpperCase())) return false;
   if (ST.th && s.th !== ST.th) return false; if (ST.sec && s.sec !== ST.sec) return false;
   if (ST.cons.length && !ST.cons.includes(g(s, 'cons') || 'No rating')) return false;
