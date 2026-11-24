@@ -2,13 +2,17 @@
    Superinvestors, Congress Trades, ETFs That Own This, Saved Screens, Pricing Plans and more Pro banners. Same data and layout for every stock. ---------- */
 /* RETIRED SECTIONS (Zev, Nov 24, 2026): switched off, code kept. To restore one, remove its key from TW_OFF.
    Log with snapshots: project doc claude/tickerwise-retired-sections.md */
-window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway', 'bots'];
-(function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] }, subway: { h: [], t: [] }, bots: { h: ['#/bots'], t: ['Strategy Bots', 'strategy bot'] } };
+window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway', 'bots', 'widgets', 'brokers', 'legendquiz', 'showcase'];
+(function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] }, subway: { h: [], t: [] }, bots: { h: ['#/bots'], t: ['Strategy Bots', 'strategy bot'] }, widgets: { h: ['#/widgets', '#/embed'], t: ['Score Widgets'] }, brokers: { h: ['#/brokers'], t: ['Broker Comparison'] }, legendquiz: { h: ['#/legend-quiz'], t: ['Legend Quiz', 'Which Legend Are You'] },
+    /* hidden, not retired: Motion Gallery still opens at #/showcase for Zev, but no link to it is shown anywhere */
+    showcase: { h: [], x: ['#/showcase'], t: ['Motion Gallery'] } };
   const on = () => (window.TW_OFF || []).filter(k => R[k]);
   window.twOff = k => on().includes(k);
-  window.twOffH = h => { h = String(h || ''); return on().some(k => R[k].h.some(x => h === x || h.indexOf(x + '/') === 0 || h.indexOf(x + '?') === 0)); };
+  const hm = (h, L) => L.some(x => h === x || h.indexOf(x + '/') === 0 || h.indexOf(x + '?') === 0);
+  window.twOffH = h => { h = String(h || ''); return on().some(k => hm(h, R[k].h.concat(R[k].x || []))); };
+  const gH = h => { h = String(h || ''); return on().some(k => hm(h, R[k].h)); };
   window.twOffT = t => { t = String(t || ''); return on().some(k => R[k].t.some(x => t.indexOf(x) >= 0)); };
-  const guard = () => { if (window.twOffH(location.hash)) history.replaceState(null, '', '#/tools'); };
+  const guard = () => { if (gH(location.hash)) history.replaceState(null, '', '#/tools'); };
   guard(); window.addEventListener('hashchange', guard); })();
 (function () {
 const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];

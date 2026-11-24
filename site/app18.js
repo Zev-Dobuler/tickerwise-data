@@ -382,7 +382,7 @@ function route() {
   let n = 0; const wait = (ok, fn) => { const go = () => { if (ok()) fn(); else if (n++ < 40) setTimeout(go, 200); }; setTimeout(go, 500); };
   const W = () => !$('#app .bx-set') && $('#app .sec .wrap'), first = () => $('#app .sec .wrap');
   const map = { markets: [weather, globe, terrain], investors: [river], signals: [rain], dashboard: [city], calendar: [ripple], briefing: [ripple], community: [aurora], learn: [] };
-  if (k === 'tools') wait(() => $('#app .tt-g') && !$('#bx-tt'), () => $('#app .tt-g').insertAdjacentHTML('beforeend', '<a class="tt-tool" id="bx-tt" href="#/showcase"><em>New</em><i>✨</i><b>Motion Gallery</b><span>All 20 live data banners in one place.</span></a>'));
+  if (k === 'tools') wait(() => $('#app .tt-g') && !$('#bx-tt'), () => $('#app .tt-g').insertAdjacentHTML('beforeend', twOffH('#/showcase') ? '' : '<a class="tt-tool" id="bx-tt" href="#/showcase"><em>New</em><i>✨</i><b>Motion Gallery</b><span>All 20 live data banners in one place.</span></a>'));
   if (map[k] && !(k === 'investors' && p[1]) && !(k === 'paper' && p[1])) wait(W, () => put(map[k], first()));
   if (k === 'stock' && p[1]) { const t = decodeURIComponent(p[1]).toUpperCase(), tab = p[2] || 'overview'; wait(() => $('.main') && !$('.main .bx-set'), () => { if (tab === 'overview') put([() => dna(t)], $('.main'));  }); }
 }
