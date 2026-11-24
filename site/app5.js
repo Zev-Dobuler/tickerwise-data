@@ -1,5 +1,15 @@
 /* ---------- Tickerwise new features (Nov 22, 2026): Market Heatmap, Fair Value, Analyst Target History, Revenue by Segment & Geography, Seasonality,
    Superinvestors, Congress Trades, ETFs That Own This, Saved Screens, Pricing Plans and more Pro banners. Same data and layout for every stock. ---------- */
+/* RETIRED SECTIONS (Zev, Nov 24, 2026): switched off, code kept. To restore one, remove its key from TW_OFF.
+   Log with snapshots: project doc claude/tickerwise-retired-sections.md */
+window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay'];
+(function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] } };
+  const on = () => (window.TW_OFF || []).filter(k => R[k]);
+  window.twOff = k => on().includes(k);
+  window.twOffH = h => { h = String(h || ''); return on().some(k => R[k].h.some(x => h === x || h.indexOf(x + '/') === 0 || h.indexOf(x + '?') === 0)); };
+  window.twOffT = t => { t = String(t || ''); return on().some(k => R[k].t.some(x => t.indexOf(x) >= 0)); };
+  const guard = () => { if (window.twOffH(location.hash)) history.replaceState(null, '', '#/tools'); };
+  guard(); window.addEventListener('hashchange', guard); })();
 (function () {
 const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const { S, BY, esc, nz, sg, cls, dfmt, fcv, capFmt, pxSeries, pxDate, SCR } = window.TWX || {};
