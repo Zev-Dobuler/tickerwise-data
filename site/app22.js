@@ -181,7 +181,7 @@ let ZM = +jget('tw_zoom', 0); const applyZoom = () => { app.classList.remove('r5
 function aaButton() { const bar = $('#r2-stat .wrap'); if (!bar || $('#r5-aa')) return; const b = document.createElement('button'); b.id = 'r5-aa'; b.title = 'Text size'; b.onclick = () => { ZM = (ZM + 1) % 3; jset('tw_zoom', ZM); applyZoom(); }; const dk = $('#r2-dk', bar); dk ? dk.before(b) : bar.appendChild(b); applyZoom(); }
 
 function toolTiles() { const g = $('#app .tt-g'); if (!g || $('#r5-tt')) return; const m = document.createElement('i'); m.id = 'r5-tt'; m.hidden = true; g.appendChild(m);
-  const T = [['🤖', 'Strategy Bots', 'Rule-based paper portfolios that rebalance themselves, with 2-year backtests.', '#/bots'], ['🧭', 'My Theses', 'Why you own each stock, checked against the data every night.', '#/theses'], ['🗞️', 'My News', 'Headlines for your watchlist and paper holdings only.', '#/mynews'], ['🖥️', 'Chart Desk', 'Side-by-side charts with a synced crosshair.', '#/chartdesk'], ['👔', 'Insider Cluster Buys', 'Stocks where several insiders are buying.', '#/insider-buys'], ['🏦', 'Fund Buying', 'What the big funds bought and sold last quarter.', '#/fund-buying'], ['🧩', 'ETF Finder', 'ETFs that hold the most of your stocks.', '#/etf-finder']];
+  const T = [['🤖', 'Strategy Bots', 'Rule-based paper portfolios that rebalance themselves, with 2-year backtests.', '#/bots'], ['🧭', 'My Theses', 'Why you own each stock, checked against the data every night.', '#/theses'], ['🗞️', 'My News', 'Headlines for your watchlist and paper holdings only.', '#/mynews'], ['🖥️', 'Chart Desk', 'Side-by-side charts with a synced crosshair.', '#/chartdesk'], ['👔', 'Insider Cluster Buys', 'Stocks where several insiders are buying.', '#/insider-buys'], ['🏦', 'Fund Buying', 'What the big funds bought and sold last quarter.', '#/fund-buying'], ['🧩', 'ETF Finder', 'ETFs that hold the most of your stocks.', '#/etf-finder']].filter(t => !twOffH(t[3]));
   g.insertAdjacentHTML('beforeend', T.map(t => `<a class="tt-tool" href="${t[3]}"><em>New</em><i>${t[0]}</i><b>${t[1]}</b><span>${t[2]}</span></a>`).join('')); }
 
 const PAGES = { theses, bots, mynews, chartdesk, 'insider-buys': insiderBuys, 'fund-buying': fundBuying, 'etf-finder': etfFinder };
@@ -196,6 +196,6 @@ function route() { const p = location.hash.replace(/^#\/?/, '').split('#')[0].sp
   if (p[0] === 'markets') wait(() => $('#app .sec .wrap'), () => poll($('#app .sec .wrap')));
 }
 tabbar(); window.addEventListener('hashchange', () => setTimeout(route, 80)); setTimeout(route, 90);
-const nb = runBots(); if (nb) setTimeout(() => toast(`🤖 ${nb} strategy bot${nb === 1 ? '' : 's'} rebalanced at the last close. <a href="#/bots">View</a>`), 3000);
+const nb = twOff('bots') ? 0 : runBots(); if (nb) setTimeout(() => toast(`🤖 ${nb} strategy bot${nb === 1 ? '' : 's'} rebalanced at the last close. <a href="#/bots">View</a>`), 3000);
 window.TWR5 = { health, TH, runBots, backtest, BOTS };
 })();

@@ -2,8 +2,8 @@
    Superinvestors, Congress Trades, ETFs That Own This, Saved Screens, Pricing Plans and more Pro banners. Same data and layout for every stock. ---------- */
 /* RETIRED SECTIONS (Zev, Nov 24, 2026): switched off, code kept. To restore one, remove its key from TW_OFF.
    Log with snapshots: project doc claude/tickerwise-retired-sections.md */
-window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway'];
-(function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] }, subway: { h: [], t: [] } };
+window.TW_OFF = window.TW_OFF || ['tickerdle', 'replay', 'subway', 'bots'];
+(function () { const R = { tickerdle: { h: ['#/tickerdle'], t: ['Tickerdle'] }, replay: { h: ['#/paper/replay', '#/replay-board'], t: ['Market Replay', 'Replay Leaderboard'] }, subway: { h: [], t: [] }, bots: { h: ['#/bots'], t: ['Strategy Bots', 'strategy bot'] } };
   const on = () => (window.TW_OFF || []).filter(k => R[k]);
   window.twOff = k => on().includes(k);
   window.twOffH = h => { h = String(h || ''); return on().some(k => R[k].h.some(x => h === x || h.indexOf(x + '/') === 0 || h.indexOf(x + '?') === 0)); };
