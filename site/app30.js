@@ -41,13 +41,30 @@ const ORD = [[/^(r2-wch)$/, 1], [/^(ai-box)$/, 2], [/^Price Chart/, 10], [/^Repo
   [/^Returns vs the S&P/, 120], [/^Performance/, 130], [/^Earnings Reactions/, 140], [/^Timeline/, 150], [/^The Big Picture/, 160], [/^Compare With Similar/, 170], [/^(r3-peer)$/, 180],
   [/^Stocks Like This/, 190], [/^ETFs That Own/, 200], [/In The News$/, 210], [/^Tickerwise Research/, 220], [/^Prediction Markets/, 230], [/^My Thesis/, 240], [/^Live Community/, 250],
   [/^Community$/, 260], [/^Get Alerts/, 270], [/^(r3-ad)$/, 280], [/^(r3-noprint)$/, 290]];
+const OVM = [
+  ['moves', "What's Happening", 40, [["What's Happening", /^What's Happening/], ['Why Is It Moving?', /^Why Is It Moving/]]],
+  ['returns', 'Returns', 120, [['Vs the S&P 500', /^Returns vs the S&P/], ['Performance', /^Performance/]]],
+  ['peers', 'Peers', 170, [['Peer Table', /^(r3-peer)$/], ['Compare With Similar Stocks', /^Compare With Similar/], ['Stocks Like This', /^Stocks Like This/]]],
+  ['community', 'Community', 250, [['Live Community', /^Live Community/], ['Discussions', /^Community$/]]]], OVS = {};
+const ovcss = document.createElement('style'); ovcss.textContent = `.ovm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:-8px}.ovm b{font:800 18px Inter,sans-serif;color:#0B1B3F;margin-right:6px}.ovm button{border:1.5px solid var(--line,#E2E8F0);background:#fff;border-radius:999px;padding:6px 13px;font:700 13px Inter,sans-serif;color:#0B1B3F;cursor:pointer;white-space:nowrap}.ovm button.on{background:#0B1B3F;border-color:#0B1B3F;color:#fff}.ovm button:hover:not(.on){border-color:#2F6BFF}@media(max-width:600px){.ovm b{width:100%}}`; document.head.appendChild(ovcss);
 function ovOrder() {
   const m = $('#app .sp-body > .main'); if (!m) return; const parts = location.hash.replace(/^#\/?/, '').split(/[/?]/), ov = parts[0] === 'stock' && (!parts[2] || parts[2] === 'overview');
-  if (!ov) { $$('[data-ovo]', m).forEach(e => { e.style.order = ''; if (e.dataset.ovo === 'w') e.style.display = ''; delete e.dataset.ovo; }); return; }
+  if (!ov) { $$('.ovm', m).forEach(e => e.remove()); $$('[data-ovo]', m).forEach(e => { e.style.order = ''; if (e.dataset.ovo === 'w' || e.dataset.ovh) e.style.display = ''; delete e.dataset.ovo; delete e.dataset.ovh; }); return; }
   const W = [$('#r2-why'), $('#r5-tl')].filter(Boolean).map(e => e.parentElement); const t = $('#r5-tl'); if (t && t.parentElement.parentElement !== m) W.push(t.parentElement.parentElement);
   [...W, $('#tw-sc'), $('#r3-st')].forEach(w => { if (w && w !== m && w.parentElement && (w.parentElement === m || w.parentElement.dataset.ovo === 'w')) { w.style.display = 'contents'; w.dataset.ovo = 'w'; } });
-  const flat = []; const walk = el => [...el.children].forEach(k => k.dataset.ovo === 'w' ? walk(k) : flat.push(k)); walk(m);
-  let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; });
+  const flat = []; const walk = el => [...el.children].forEach(k => k.dataset.ovo === 'w' ? walk(k) : k.classList.contains('ovm') ? 0 : flat.push(k)); walk(m);
+  let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; k.dataset.ovl = key + '|' + ht; });
+  /* merged sections (Zev, Nov 24, 2026): one title with tabs, one section showing at a time */
+  OVM.forEach(([gk, title, o, tabs]) => {
+    const mem = tabs.map(([n, rx]) => flat.find(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); return /\(/.test(rx.source) ? rx.test(key) : rx.test(ht); }));
+    const have = tabs.map((x, i) => [x[0], mem[i]]).filter(x => x[1]); let b = $('#ovm-' + gk, m);
+    if (have.length < 2) { if (b) b.remove(); return; }
+    let cur = OVS[gk]; if (!have.some(x => x[0] === cur)) cur = have[0][0];
+    if (!b) { b = document.createElement('div'); b.className = 'ovm'; b.id = 'ovm-' + gk; m.prepend(b); }
+    const html = `<b>${title}</b>` + have.map(x => `<button type="button" data-t="${x[0]}" class="${x[0] === cur ? 'on' : ''}">${x[0]}</button>`).join('');
+    if (b.dataset.h !== html) { b.innerHTML = html; b.dataset.h = html; $$('button', b).forEach(x => x.onclick = () => { OVS[gk] = x.dataset.t; ovOrder(); }); }
+    b.style.order = o; have.forEach(([n, k]) => { k.style.order = o; const show = n === cur; if (show) { if (k.dataset.ovh) { k.style.display = ''; delete k.dataset.ovh; } } else if (!k.dataset.ovh) { k.style.display = 'none'; k.dataset.ovh = '1'; } });
+  });
 }
 const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ovOrder(); };
 let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; tick(); }, 80); }).observe(app, { childList: true, subtree: true });
