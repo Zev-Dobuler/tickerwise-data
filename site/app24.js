@@ -87,15 +87,21 @@ function currents(t) { const v = (NX.SI || {})[t]; if (!v || !v[3] || !v[3].leng
 
 /* 6. BEAT-STREAK DOMINOES */
 function dominoes(t) { const H0 = ((BY[t] || {}).earn || {}).h || []; if (H0.length < 3) return null; const Q = H0.slice(0, 12).reverse();
-  /* follows the Report History toggle below it (Revenue / Earnings (EPS)); Revenue first, like the table */
-  const md = () => { const b = document.querySelector('.et-seg button.on'); return b && b.dataset.k === 'eps' ? 'eps' : 'rev'; };
+  /* Revenue / Earnings (EPS) switch on the banner, kept in sync with the Report History switch; Revenue first, like the table */
+  const tb = () => document.querySelector('.et-seg button.on'), md0 = () => { const b = tb(); return b && b.dataset.k === 'eps' ? 'eps' : 'rev'; };
   const isB = (h, m) => m === 'eps' ? h.e != null && h.ee != null && h.e >= h.ee : h.rb != null ? !!h.rb : h.ra != null && h.re != null && h.ra >= h.re;
-  const ttl = m => `<em>${Q.filter(h => isB(h, m)).length} of ${Q.length}</em> quarters beat on ${m === 'eps' ? 'earnings (EPS)' : 'revenue'}.`;
-  const el = frame('dom', 'Earnings record · ' + esc(t) + ' · <span style="color:#34D399">green = beat</span> · <span style="color:#F87171">red = miss</span>', `<span class="dom-t">${ttl(md())}</span>`, 'One domino per quarter, oldest first. Beats knock the next one over and keep the chain going; a miss stands still and breaks the streak. Switch Revenue / Earnings (EPS) in Report History and the dominoes follow.', '');
-  let cur = md(), t0 = null; const sync = () => { const m = md(); if (m !== cur) { cur = m; t0 = null; const h = el.querySelector('.dom-t'); if (h) h.innerHTML = ttl(m); } };
-  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.et-seg')) setTimeout(sync, 30); });
-  host(el, (g, W, H, tt) => { sync(); if (t0 == null) t0 = tt; const T = tt - t0; g.clearRect(0, 0, W, H); const n = Q.length, gap = (W - 80) / n, base = H - 30, hh = Math.min(110, H - 160), cyc = RM ? 99 : (T % (n * .35 + 2.5)) / .35; let chainOn = true;
-    Q.forEach((h, i) => { const x = 40 + i * gap + gap / 2, beat = isB(h, cur); if (!beat) chainOn = false; const fall = beat && chainOn ? clamp(cyc - i, 0, 1) : 0, ang = fall * 1.1;
+  const strk = m => { let k = 0; for (let i = Q.length - 1; i >= 0 && isB(Q[i], m); i--) k++; return k; };
+  const ttl = m => { const k = strk(m), w = m === 'eps' ? 'earnings (EPS)' : 'revenue'; return `<em>Streak: ${k} beat${k === 1 ? '' : 's'}</em>${k ? ' in a row' : ' (missed last quarter)'}.<span style="display:block;font-size:.62em;font-weight:600;color:#CBD5E1;margin-top:4px">${Q.filter(h => isB(h, m)).length} of ${Q.length} quarters beat on ${w}</span>`; };
+  let cur = md0(), t0 = null;
+  const sw = `<div class="seg dom-sw" style="pointer-events:auto;margin:10px 0 2px;background:rgba(255,255,255,.12)"><button type="button" data-k="rev">Revenue</button><button type="button" data-k="eps">Earnings (EPS)</button></div>`;
+  const el = frame('dom', 'Earnings record · ' + esc(t) + ' · <span style="color:#34D399">green = beat</span> · <span style="color:#F87171">red = miss</span>', `<span class="dom-t">${ttl(cur)}</span>`, 'One domino per quarter, oldest first. Each beat knocks the next one over; a miss stands still and stops the chain, and the next beat starts a new one.', '');
+  const o = el.querySelector('.bx-o h3'); if (o) o.insertAdjacentHTML('afterend', sw);
+  const paint = () => { el.querySelectorAll('.dom-sw button').forEach(b => { const on = b.dataset.k === cur; b.classList.toggle('on', on); b.style.color = on ? '#0B1B3F' : '#E2E8F0'; b.style.background = on ? '#fff' : 'transparent'; }); const h = el.querySelector('.dom-t'); if (h) h.innerHTML = ttl(cur); };
+  const set = m => { if (m === cur) return; cur = m; t0 = null; paint(); const b = document.querySelector(`.et-seg button[data-k="${m}"]`); if (b && !b.classList.contains('on')) b.click(); };
+  el.querySelectorAll('.dom-sw button').forEach(b => b.onclick = () => set(b.dataset.k)); paint();
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.et-seg')) setTimeout(() => { const m = md0(); if (m !== cur) { cur = m; t0 = null; paint(); } }, 30); });
+  host(el, (g, W, H, tt) => { if (t0 == null) t0 = tt; const T = tt - t0; g.clearRect(0, 0, W, H); const n = Q.length, gap = (W - 80) / n, base = H - 30, hh = Math.min(100, H - 190), cyc = RM ? 99 : (T % (n * .35 + 2.5)) / .35;
+    Q.forEach((h, i) => { const x = 40 + i * gap + gap / 2, beat = isB(h, cur); const fall = beat ? clamp(cyc - i, 0, 1) : 0, ang = fall * 1.1;
       g.save(); g.translate(x + 9, base); g.rotate(ang); g.fillStyle = beat ? `rgba(${CL.g},.9)` : `rgba(${CL.r},.9)`; g.shadowColor = g.fillStyle; g.shadowBlur = 10; g.beginPath(); g.roundRect ? g.roundRect(-18, -hh, 18, hh, 4) : g.rect(-18, -hh, 18, hh); g.fill(); g.shadowBlur = 0; g.fillStyle = '#fff'; g.beginPath(); g.arc(-9, -hh * .7, 2.5, 0, 7); g.fill(); g.beginPath(); g.arc(-9, -hh * .3, 2.5, 0, 7); g.fill(); g.restore();
       if (W > 600 || i % 2 === 0) { g.fillStyle = '#CBD5E1'; g.font = '700 10px Inter'; g.textAlign = 'center'; g.fillText(h.q.replace(' 20', "'"), x, base + 16); g.textAlign = 'left'; } }); }); return el; }
 
