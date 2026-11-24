@@ -45,7 +45,8 @@ def ins_pack(row):
         if side == 'S': sells += 1; sv += t.get('value') or 0
         out.append([(t.get('name') or '').title()[:26], (t.get('role') or '').lstrip('* ')[:18], side, t.get('shares'), None if t.get('value') is None else round(t['value'] / 1e6, 3), t.get('date')])
     out.sort(key=lambda x: x[5] or '', reverse=True)
-    return [row.get('all'), buys, sells, M(bv), M(sv), [[x[0], x[1], x[2], x[4], x[5]] for x in out[:5]], row.get('read')]
+    # i[7] = every buy in the window (Insider Cluster Buys lists each buyer; Zev, Nov 24, 2026)
+    return [row.get('all'), buys, sells, M(bv), M(sv), [[x[0], x[1], x[2], x[4], x[5]] for x in out[:5]], row.get('read'), [[x[0], x[1], x[2], x[4], x[5]] for x in out if x[2] == 'B']]
 for r in L('insiders'):
     if r['ticker'] in U: X[r['ticker']]['i'] = ins_pack(r)
 wx = L('wishx')
