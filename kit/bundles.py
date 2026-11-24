@@ -45,6 +45,8 @@ for _t, _o in _co.items():
     if o: F[_t] = o
 for q in L('quotes'):
     if q.get('next_earnings') and q['ticker'] in F: F[q['ticker']]['Next ER Date'] = [q['next_earnings'], None, None]
+for r in L('wish'):  # wish-list parity: the same Next ER Date line for wish-list stocks (Yahoo earnings date)
+    if r.get('k') == 's' and r.get('ed') and r['t'] in F and 'Next ER Date' not in F[r['t']]: F[r['t']]['Next ER Date'] = [r['ed'], None, None]
 FK = FK + ['Gross Margin', 'P/S Compression']
 # Fill gaps for wish-list stocks not in Zev's sheet (Nov 21, 2026): Smart Score, consensus and target from TipRanks, Zacks Rank from Zacks (no Excel colors; Zev Score stays blank).
 _px = {r['t']: r.get('px') for r in L('wish') if r.get('k') == 's'}

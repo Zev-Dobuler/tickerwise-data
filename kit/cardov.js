@@ -14,7 +14,16 @@ const Q = data.quotes || [], have = new Set(Q.map(q => q.ticker)), px = {};
 (data.wish || []).forEach(r => { if (r.k === 's' && r.px) px[r.t] = r.px; }); (data.wishx || []).forEach(r => { if (r.k === 't' && r.px && !px[r.ticker]) px[r.ticker] = r.px; });
 const asof = (Q.find(q => q.as_of) || {}).as_of || new Date().toISOString();
 Object.entries(px).forEach(([t, p]) => { if (!have.has(t)) Q.push({ ticker: t, price: p, as_of: asof }); }); data.quotes = Q;
-const TK = new Set(Q.map(q => q.ticker)); (data.erscore || []).forEach(r => { if (r.ticker) TK.add(r.ticker); }); (data.tipranks_ta || []).forEach(r => { if (r.ticker) TK.add(r.ticker); });
+/* WISH-LIST PARITY (Zev, Nov 24, 2026: "there's no data in this website that a holding has that a wish list doesn't have").
+   The nightly report pulls the same sources for wish-list stocks but stores them in `wishx` (k: t, yv, zx, fs, ta, fc, fp, cap, x, sr),
+   while the card accessors read the holdings datasets. Copy each wish-list stock's rows into the holdings-shaped datasets
+   (only for stocks a dataset doesn't already have) so __cardOv / __valOv / __zevScore compute every box for it the same way. */
+{ const WX = data.wishx || [], has = id => new Set((data[id] || []).filter(r => r && r.ticker).map(r => r.ticker)), WS = {}; (data.wish || []).forEach(r => { if (r.k === 's' && r.t) WS[r.t] = r; });
+  const ER = data.erscore = data.erscore || [], erHas = new Set(ER.filter(r => r.ticker).map(r => r.k + '|' + r.ticker));
+  const into = (id, k) => { const H = has(id); data[id] = data[id] || []; WX.filter(r => r.k === k && r.ticker && !H.has(r.ticker)).forEach(r => { const o = Object.assign({}, r); delete o.k; data[id].push(o); }); };
+  WX.filter(r => ['t', 'yv', 'zx', 'fs'].includes(r.k) && r.ticker && !erHas.has(r.k + '|' + r.ticker)).forEach(r => { const o = Object.assign({}, r); if (o.k === 'yv' && o.shares == null) { const w = WS[o.ticker]; if (w && w.mc && w.px) o.shares = w.mc / w.px; } ER.push(o); });
+  into('tipranks_ta', 'ta'); into('fincharts', 'fc'); into('fprices', 'fp'); into('capital', 'cap'); into('extra', 'x'); into('stockrisk', 'sr'); }
+const TK = new Set(Q.map(q => q.ticker)); (data.wishx || []).forEach(r => { if (r.ticker) TK.add(r.ticker); }); (data.erscore || []).forEach(r => { if (r.ticker) TK.add(r.ticker); }); (data.tipranks_ta || []).forEach(r => { if (r.ticker) TK.add(r.ticker); });
 let src = fs.readFileSync(P + 'index.html', 'utf8');
 for (const f of ['bet.js', 'x.js', 'm.js', 'crashes.js']) if (fs.existsSync(P + f)) src = src.replace(`<script src="${f}"></script>`, () => '<script>' + fs.readFileSync(P + f, 'utf8').replace(/<\/script/g, '<\\/script') + '</script>');
 src = src.replace(/<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/d3\/[^"]*"><\/script>/g, '');
