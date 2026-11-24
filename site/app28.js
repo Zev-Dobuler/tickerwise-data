@@ -202,7 +202,7 @@ function view() {
       <select id="s2sec"><option value="">All sectors</option>${[...new Set(S.map(s => s.sec))].sort().map(x => `<option ${x === ST.sec ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <button type="button" class="s2-btn${ST.open ? ' pri' : ''}" id="s2f">Filters${act ? ' (' + act + ')' : ''} ${ST.open ? '▴' : '▾'}</button>
       <span class="s2-cnt">Showing <b>${L.length}</b> of ${S.length}</span></div>
-    ${ST.open ? panel() : ''}
+    ${ST.open ? panel() + `<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:8px 2px 2px"><span class="s2-cnt" style="margin-left:0">Showing <b>${L.length}</b> of ${S.length}</span></div>` : ''}
     <div class="s2-cols"><span class="l">Columns:</span>${GROUPS.map(gn => `<button type="button" data-grp="${esc(gn)}" class="${ST.hide.includes(gn) ? '' : 'on'}">${esc(gn)}</button>`).join('')}
       <span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="s2-btn" style="height:30px;font-size:12px" data-paid="Saved screens" data-paid-sub="Save your filters and sorts as named screens, synced to your account on every device.">🔒 Save screen</button></span></div>
     <div class="s2-wrap"><table><thead><tr class="gr"><th></th>${grp.map(([n, k]) => `<th colspan="${k}">${esc(n)}</th>`).join('')}</tr><tr><th data-k="t">Stock ${arrow('t')}</th>${vis.map(c => `<th data-k="${c[0]}">${esc(c[1])}${arrow(c[0])}</th>`).join('')}</tr></thead>
