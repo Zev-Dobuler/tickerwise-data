@@ -39,13 +39,12 @@ function erDates() {
    and every section's own code keeps working; the wrappers that group several sections become display:contents. */
 const ORD = [[/^(r2-wch)$/, 1], [/^(ai-box)$/, 2], [/^Price Chart \+ Timeline/, 10], [/^Price Chart/, 10], [/^Report Card/, 20], [/^Tickerwise Take/, 30], [/^What's Happening/, 40], [/^Why Is It Moving/, 50],
   [/^Scores & Fundamentals/, 60], [/^Quarterly Results/, 70], [/^(ecall-)/, 71], [/^Earnings Preview/, 72], [/^Valuation & Cash Flow/, 80], [/^Fair Value/, 90], [/^Bull vs Bear/, 100], [/^Zacks Style/, 110],
-  [/^Returns vs the S&P/, 120], [/^Performance/, 130], [/^Earnings Reactions/, 140], [/^Timeline/, 150], [/^The Big Picture/, 160], [/^Compare With Similar/, 170], [/^(r3-peer)$/, 180],
+  [/^Returns vs the S&P/, 120], [/^Performance/, 130], [/^Earnings Reactions/, 140], [/^Timeline/, 150], [/^The Big Picture/, 160], [/^(r3-peer)$/, 170], [/^Compare With Similar/, 175],
   [/^Stocks Like This/, 190], [/^ETFs That Own/, 200], [/In The News$/, 210], [/^Tickerwise Research/, 220], [/^Prediction Markets/, 230], [/^My Thesis/, 240], [/^Live Community/, 250],
   [/^Community$/, 260], [/^Get Alerts/, 270], [/^(r3-ad)$/, 280], [/^(r3-noprint)$/, 290]];
 const OVM = [
   ['moves', "What's Happening", 40, [["What's Happening", /^What's Happening/], ['Why Is It Moving?', /^Why Is It Moving/]]],
-  ['returns', 'Returns', 120, [['Vs the S&P 500', /^Returns vs the S&P/], ['Performance', /^Performance/]]],
-  ['peers', 'Peers', 170, [['Peer Table', /^(r3-peer)$/], ['Compare With Similar Stocks', /^Compare With Similar/], ['Stocks Like This', /^Stocks Like This/]]]], OVS = {};
+  ['returns', 'Returns', 120, [['Vs the S&P 500', /^Returns vs the S&P/], ['Performance', /^Performance/]]]], OVS = {};
 const ovcss = document.createElement('style'); ovcss.textContent = `.ovm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:-8px}.ovm b{font:800 18px Inter,sans-serif;color:#0B1B3F;margin-right:6px}.ovm button{border:1.5px solid var(--line,#E2E8F0);background:#fff;border-radius:999px;padding:6px 13px;font:700 13px Inter,sans-serif;color:#0B1B3F;cursor:pointer;white-space:nowrap}.ovm button.on{background:#0B1B3F;border-color:#0B1B3F;color:#fff}.ovm button:hover:not(.on){border-color:#2F6BFF}@media(max-width:600px){.ovm b{width:100%}}`; document.head.appendChild(ovcss);
 /* Community on the Overview (Zev, Nov 24, 2026): one Community section. Live Community is switched off; its "This week: up or down?" poll
    moves to the top of Community, with a "Your view" Bullish / Bearish / Neutral pick. Posting happens in the discussion itself. */
@@ -67,7 +66,7 @@ function ovOrder() {
   let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; k.dataset.ovl = key + '|' + ht; });
   /* removed from the Overview (Zev, Nov 24, 2026), switched off not deleted: watchers line while it reads 0, the rotating Pro teaser,
      Prediction Markets, The Big Picture, the promoted Pick 5 ad. ETFs That Own It was kept. */
-  flat.forEach(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); if (key === 'r2-wch') { const w = [...k.children].find(c => /members? watching/.test(c.textContent) && !/Share/.test(c.textContent)); if (w) w.style.display = /\b0 members watching/.test(w.textContent) ? 'none' : ''; } const off = (k.classList.contains('pro-t') && k.id !== 'ai-box') || key === 'r2-pm' || /^The Big Picture/.test(ht) || key === 'r3-ad' || key === 'tz-com' || (!!$('#ptl', m) && (key === 'r5-tl' || /^Price Chart$/.test(ht)));
+  flat.forEach(k => { const [key, ht] = (k.dataset.ovl || '|').split('|'); if (key === 'r2-wch') { const w = [...k.children].find(c => /members? watching/.test(c.textContent) && !/Share/.test(c.textContent)); if (w) w.style.display = /\b0 members watching/.test(w.textContent) ? 'none' : ''; } const off = (k.classList.contains('pro-t') && k.id !== 'ai-box') || key === 'r2-pm' || /^The Big Picture/.test(ht) || key === 'r3-ad' || key === 'tz-com' || key === 'r2-sim' || (!!$('#ptl', m) && (key === 'r5-tl' || /^Price Chart$/.test(ht)));
     if (off) { if (k.style.display !== 'none') { k.style.display = 'none'; k.dataset.ovh = 'x'; } } else if (k.dataset.ovh === 'x') { k.style.display = ''; delete k.dataset.ovh; } });
   /* merged sections (Zev, Nov 24, 2026): one title with tabs, one section showing at a time */
   OVM.forEach(([gk, title, o, tabs]) => {
@@ -85,7 +84,7 @@ function ovOrder() {
 const tbcss = document.createElement('style'); tbcss.textContent = `.tw-tip,.r5-tip,.ptl-tip,.tm-tip,.th-tip,.bx-tip{font-size:16px!important;line-height:1.45!important}
 .tw-tip *,.r5-tip *,.ptl-tip *,.tm-tip *,.th-tip *,.bx-tip *{font-size:16px!important}
 .tw-tip>b:first-child,.r5-tip>b:first-child,.ptl-tip>b:first-child,.tm-tip>b:first-child,.th-tip>b:first-child,.bx-tip>b:first-child{font-size:17px!important}
-.tw-tip .tw-tip-s{font-size:14.5px!important}`; document.head.appendChild(tbcss); /* every hover pop-up on the site uses one size: 16px text, 17px title (Zev, Nov 24, 2026: "be consistent with the pop-ups") */
+.tw-tip .tw-tip-s{font-size:14.5px!important}body:has(#app.r5-z1)>.tw-tip{zoom:1.1}body:has(#app.r5-z2)>.tw-tip{zoom:1.22}`; /* the A+ / A++ text size zooms #app; this pop-up lives outside #app, so it gets the same zoom */ document.head.appendChild(tbcss); /* every hover pop-up on the site uses one size: 16px text, 17px title (Zev, Nov 24, 2026: "be consistent with the pop-ups") */
 /* TEST (Zev, Nov 24, 2026), MU only: a copy of the Price Chart with the Timeline's events laid on it, right under the normal Price Chart.
    Zev approved it the same night: it now shows on every stock and replaces the Price Chart and Timeline cards on the Overview (both still render hidden, because this card mirrors them). To go back: make PTL_TEST.has return false. */
 const PTL_TEST = { has: () => true }, PTL = { sel: new Set(['e', 'a', 'i', 'c', 'n']) };
