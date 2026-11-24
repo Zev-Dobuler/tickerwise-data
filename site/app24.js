@@ -88,8 +88,8 @@ function currents(t) { const v = (NX.SI || {})[t]; if (!v || !v[3] || !v[3].leng
 /* 6. BEAT-STREAK DOMINOES */
 function dominoes(t) { const H0 = ((BY[t] || {}).earn || {}).h || []; if (H0.length < 3) return null; const Q = H0.slice(0, 12).reverse();
   /* Zev, Nov 24, 2026: two rows of dominoes (Earnings EPS on top, Revenue below) instead of a switch; streak lines on the right, ticker big on the left */
-  /* same beat flags as the Earnings Scorecard and Report History (eb / rb), so every number on the tab matches */
-  const isB = (h, m) => m === 'eps' ? (h.eb != null ? !!h.eb : h.e != null && h.ee != null && h.e > h.ee) : h.rb != null ? !!h.rb : h.ra != null && h.re != null && h.ra > h.re;
+  /* same rule as the Earnings Scorecard: a beat means actual above the estimate (in line is not a beat), so the streaks and counts match it */
+  const isB = (h, m) => m === 'eps' ? (h.e != null && h.ee != null ? h.e > h.ee : !!h.eb) : h.rb != null ? !!h.rb : h.ra != null && h.re != null && h.ra > h.re;
   const has = (h, m) => m === 'eps' ? h.eb != null || (h.e != null && h.ee != null) : h.rb != null || (h.ra != null && h.re != null);
   const strk = m => { let k = 0; for (let i = Q.length - 1; i >= 0 && has(Q[i], m) && isB(Q[i], m); i--) k++; return k; };
   const line = (m, lab) => { const k = strk(m), n = Q.filter(h => has(h, m)).length, b = Q.filter(h => has(h, m) && isB(h, m)).length; return `<div class="dom-s"><em>${lab} streak: ${k} beat${k === 1 ? '' : 's'}</em> ${k ? 'in a row' : '(missed last quarter)'}<small>${b} of ${n} quarters beat</small></div>`; };
