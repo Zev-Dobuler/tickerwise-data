@@ -47,7 +47,7 @@ function ovOrder() {
   const W = [$('#r2-why'), $('#r5-tl')].filter(Boolean).map(e => e.parentElement); const t = $('#r5-tl'); if (t && t.parentElement.parentElement !== m) W.push(t.parentElement.parentElement);
   [...W, $('#tw-sc'), $('#r3-st')].forEach(w => { if (w && w !== m && w.parentElement && (w.parentElement === m || w.parentElement.dataset.ovo === 'w')) { w.style.display = 'contents'; w.dataset.ovo = 'w'; } });
   const flat = []; const walk = el => [...el.children].forEach(k => k.dataset.ovo === 'w' ? walk(k) : flat.push(k)); walk(m);
-  let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || {}).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; });
+  let prev = 0; flat.forEach(k => { const h = (k.querySelector('.card-h h3') || k.querySelector('h3') || k.querySelector('.card-h') || k).textContent || '', ht = h.replace(/\s+/g, ' ').trim(); const key = (k.id || String(k.className || '').split(' ')[0]), r = ORD.find(([rx]) => rx.test(key) && /\(/.test(rx.source) || rx.test(ht)); const o = r ? r[1] : prev + 1; prev = o; if (k.style.order !== String(o)) k.style.order = o; k.dataset.ovo = 'c'; });
 }
 const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ovOrder(); };
 let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; tick(); }, 80); }).observe(app, { childList: true, subtree: true });
