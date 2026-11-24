@@ -71,8 +71,8 @@ function ovOrder() {
     b.style.order = o; have.forEach(([n, k]) => { k.style.order = o; const h3 = k.querySelector('.card-h h3'); if (h3 && !h3.dataset.ovt) { h3.dataset.ovt = '1'; h3.style.display = 'none'; } const show = n === cur; if (show) { if (k.dataset.ovh) { k.style.display = ''; delete k.dataset.ovh; } } else if (!k.dataset.ovh) { k.style.display = 'none'; k.dataset.ovh = '1'; } });
   });
 }
-/* bigger hover pop-ups (+1px) on Quarterly Results and Valuation & Cash Flow by Quarter (Forward P/E, Forward P/S, FCF Margin) (Zev, Nov 24, 2026) */
-const tbcss = document.createElement('style'); tbcss.textContent = `.tw-tip.tw-big{font-size:14px!important}.tw-tip.tw-big b{font-size:15px!important}.tw-tip.tw-big .tw-tip-s{font-size:12.5px!important}`; document.head.appendChild(tbcss);
+/* bigger hover pop-ups (+2px) on Quarterly Results and Valuation & Cash Flow by Quarter (Forward P/E, Forward P/S, FCF Margin) (Zev, Nov 24, 2026) */
+const tbcss = document.createElement('style'); tbcss.textContent = `.tw-tip.tw-big{font-size:15px!important}.tw-tip.tw-big b{font-size:16px!important}.tw-tip.tw-big .tw-tip-s{font-size:13.5px!important}`; document.head.appendChild(tbcss);
 document.addEventListener('mouseover', e => { const d = e.target.closest && e.target.closest('[data-tip]'); if (!d) return; const c = d.closest('.card'), h = c && (c.querySelector('.card-h h3') || {}).textContent || '', big = /^(Quarterly Results|Valuation & Cash Flow)/.test(h.trim());
   const set = () => { const t = document.querySelector('.tw-tip'); if (t) t.classList.toggle('tw-big', big); }; set(); setTimeout(set, 0); }, true);
 const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ovOrder(); };
