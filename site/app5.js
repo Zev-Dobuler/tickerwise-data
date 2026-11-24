@@ -1,3 +1,5 @@
+/* Next-earnings dates read "July 5th", no year, everywhere on the site (Zev, Nov 24, 2026) */
+window.erFmt = d => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ''); if (!m) return d || ''; const n = +m[3], sf = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][+m[2] - 1] + ' ' + n + sf; };
 /* ---------- Tickerwise new features (Nov 22, 2026): Market Heatmap, Fair Value, Analyst Target History, Revenue by Segment & Geography, Seasonality,
    Superinvestors, Congress Trades, ETFs That Own This, Saved Screens, Pricing Plans and more Pro banners. Same data and layout for every stock. ---------- */
 /* RETIRED SECTIONS (Zev, Nov 24, 2026): switched off, code kept. To restore one, remove its key from TW_OFF.

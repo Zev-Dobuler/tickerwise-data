@@ -69,7 +69,7 @@ function dayMove(t) { const z = ser(t), a = z[z.length - 1], b = z[z.length - 2]
 function whyMoving(t) {
   const s = BY[t], m = dayMove(t); if (!s || !m) return ''; const z = ser(t), w = z.length > 5 ? (m.c / z[z.length - 6].c - 1) * 100 : null, R = [], E = s.earn || {}, A = (TW.AN || {})[t], I = ((TW.X || {})[t] || {}).i, CG = (NX.CG || {})[t];
   const h = (E.h || [])[0]; if (h && h.d && dnum(h.d) >= m.d - 7) R.push(`📊 Reported ${esc(h.q)} earnings on ${esc(dfmt(h.d))}: EPS ${usd(h.e)} vs ${usd(h.ee)} expected (${h.e >= h.ee ? 'a beat' : 'a miss'}).`);
-  if (E.next) { const dd = dnum(E.next) - m.d; if (dd >= 0 && dd <= 10) R.push(`📅 Earnings due ${esc(dfmt(E.next))}, ${dd ? dd + ' day' + (dd === 1 ? '' : 's') + ' away' : 'today'}: moves often get bigger before a report.`); }
+  if (E.next) { const dd = dnum(E.next) - m.d; if (dd >= 0 && dd <= 10) R.push(`📅 Earnings due ${esc(erFmt(E.next))}, ${dd ? dd + ' day' + (dd === 1 ? '' : 's') + ' away' : 'today'}: moves often get bigger before a report.`); }
   if (A && A[10]) A[10].filter(r => dnum(r[5]) >= m.d - 7).slice(0, 2).forEach(r => R.push(`🏦 ${esc(r[0])} ${esc(r[3])} a ${esc(r[2])} rating${r[4] ? ' with a $' + r[4] + ' target' : ''} (${esc(dfmt(r[5]))}).`));
   NEWS(t).filter(a => a[3] * 1000 > Date.now() - 4 * 864e5).slice(0, 2).forEach(a => R.push(`📰 <a href="${esc(newsLink(a))}" target="_blank" rel="noopener nofollow">${esc(a[0])}</a> <span class="muted">· ${esc(a[1])}</span>`));
   if (m.av && m.v > 1.8 * m.av) R.push(`🔊 Volume was ${(m.v / m.av).toFixed(1)}× its 50-day average, so big money was moving.`);
@@ -378,7 +378,7 @@ function ics(list, name) { const L = list.filter(s => s && s.earn && /^\d{4}-\d{
 function calendar() {
   const W = jget('tw-watchlist', []).map(t => BY[t]).filter(Boolean), P = [...new Set(papers().flatMap(p => (p.lots || []).filter(l => !l.sd).map(l => l.t)))].map(t => BY[t]).filter(Boolean), up = S.filter(s => s.earn && s.earn.next && dnum(s.earn.next) >= lastD()).sort((a, b) => a.earn.next < b.earn.next ? -1 : 1);
   app.innerHTML = head('Earnings Calendar Export', 'Add earnings dates to your phone or computer calendar (Google, Apple, Outlook) in one tap.') + wrap(`${card('Add to My Calendar', '', `<div class="r2-f"><button class="btn primary" data-ic="wl">☆ My watchlist (${W.length})</button><button class="btn primary" data-ic="pp">📈 My paper holdings (${P.length})</button><button class="btn ghost" data-ic="all">All ${up.length} upcoming</button></div><p class="muted" style="margin:10px 0 0;font-size:13px">Downloads a calendar file (.ics). On a phone, open it and tap "Add All".</p>`)}
-    ${card('Coming Up', 'next 30 reports', `<div class="r2-sc"><table class="r2-t"><tr><th>Date</th><th>Stock</th><th class="r2-hm">Company</th><th class="n">Score</th></tr>${up.slice(0, 30).map(s => `<tr><td>${esc(dfmt(s.earn.next))}</td><td>${tl(s.t)}</td><td class="r2-hm muted">${esc(s.n || '')}</td><td class="n">${s.ws}</td></tr>`).join('')}</table></div>`)}`);
+    ${card('Coming Up', 'next 30 reports', `<div class="r2-sc"><table class="r2-t"><tr><th>Date</th><th>Stock</th><th class="r2-hm">Company</th><th class="n">Score</th></tr>${up.slice(0, 30).map(s => `<tr><td>${esc(erFmt(s.earn.next))}</td><td>${tl(s.t)}</td><td class="r2-hm muted">${esc(s.n || '')}</td><td class="n">${s.ws}</td></tr>`).join('')}</table></div>`)}`);
   document.title = 'Earnings Calendar — Tickerwise'; $$('[data-ic]').forEach(b => b.onclick = () => ics(b.dataset.ic === 'wl' ? W : b.dataset.ic === 'pp' ? P : up, b.dataset.ic === 'wl' ? 'Tickerwise Watchlist Earnings' : b.dataset.ic === 'pp' ? 'Tickerwise Paper Earnings' : 'Tickerwise Earnings'));
 }
 
@@ -387,7 +387,7 @@ function sotdPick() { const L = S.filter(s => (s.ws || 0) >= 7 && ser(s.t).lengt
 function sotdHTML(s, full) {
   const P = s.P || {}, F = window.TWFI, own = F && F.OWN && F.OWN[s.t], A = (TW.AN || {})[s.t], E = s.earn || {}, l = last(s.t), pil = [['Momentum', P.m], ['Earnings', P.e], ['Growth', P.g], ['Profitability', P.p], ['Health', P.b]].sort((a, b) => (b[1] || 0) - (a[1] || 0));
   const lines = [`<b>${esc(s.n)}</b> scores <b>${s.ws}/10</b>, led by ${pil[0][0].toLowerCase()} (${pil[0][1]}) and ${pil[1][0].toLowerCase()} (${pil[1][1]}). Its weakest pillar is ${pil[4][0].toLowerCase()} (${pil[4][1]}).`];
-  if (nz(E.l8)) lines.push(`It beat earnings estimates in ${E.l8}% of the last 8 quarters${E.next ? `, and reports next on ${esc(dfmt(E.next))}` : ''}.`);
+  if (nz(E.l8)) lines.push(`It beat earnings estimates in ${E.l8}% of the last 8 quarters${E.next ? `, and reports next on ${esc(erFmt(E.next))}` : ''}.`);
   if (own && own.who.length) lines.push(`${own.who.length} famous investor${own.who.length === 1 ? '' : 's'} own it, including ${esc(own.who.slice(0, 2).map(m => m.name).join(' and '))}.`);
   if (A && nz(A[0]) && l) lines.push(`Analysts rate it ${esc(A[7])} with an average target of ${usd(A[0], 0)} (${pct((A[0] / l.c - 1) * 100, 0)} from here).`);
   if (s.ret && nz(s.ret.r1y)) lines.push(`The stock is ${pct(s.ret.r1y, 0)} over the past year${s.tech && nz(s.tech.off) ? ` and ${Math.abs(s.tech.off).toFixed(0)}% below its 52-week high` : ''}.`);
