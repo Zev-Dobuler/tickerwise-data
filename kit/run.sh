@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build, encrypt and publish Tickerwise data. Run after prep.py, from anywhere.
 set -euo pipefail
-K="$(cd "$(dirname "$0")" && pwd)"; R="$(dirname "$K")"; B=/home/claude/tw2/build
+K="$(cd "$(dirname "$0")" && pwd)"; R="$(dirname "$K")"; B=/home/claude/tw2/build; export TW_REPO="$R"
 cp "$K"/*.py "$B"/
 cd "$B"
 python3 bp.py

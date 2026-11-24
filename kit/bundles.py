@@ -89,7 +89,7 @@ except Exception: pass
 _names = {r[0] for r in rows}
 pub['AN'] = {k: v for k, v in _an.items() if k in _names}
 # Long-run quality stats (stockanalysis.com statistics + annual financials), same fields for every stock
-_R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_R = os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # run.sh sets TW_REPO; the script runs from /home/claude/tw2/build, so __file__ alone points at the wrong folder
 _qp = _D + 'qstats.json' if os.path.exists(_D + 'qstats.json') else os.path.join(_R, 'qs.json')
 if os.path.exists(_qp):
     _q = json.load(open(_qp)); pub['QS'] = {k: v for k, v in _q.get('T', {}).items() if k in _names}; pub['QSd'] = _q.get('read')
