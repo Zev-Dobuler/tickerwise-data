@@ -145,6 +145,8 @@ const css = `
 #s2 .s2-pre button{border:1.5px solid #F28C28;background:#fff;color:#C2410C;font:700 12.5px 'Inter',sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer}
 #s2 .s2-pre button.on{background:#F28C28;color:#fff}
 #s2 .s2-pre button.clr{border-color:#0F172A;color:#0F172A}
+#s2 .s2-clr{border:1.5px solid #C00000;background:#fff;color:#C00000;font:700 12.5px 'Inter',sans-serif;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}#s2 .s2-clr:hover{background:#C00000;color:#fff}#s2 .s2-clr.off{opacity:.4;cursor:default;border-color:#94A3B8;color:#64748B;background:#fff}
+#s2 .s2-clrg{margin-left:8px;border:0;background:#FEE2E2;color:#B91C1C;font:700 11px 'Inter',sans-serif;padding:3px 9px;border-radius:999px;cursor:pointer;text-transform:none;letter-spacing:0;vertical-align:middle}#s2 .s2-clrg:hover{background:#C00000;color:#fff}
 #s2 .s2-bar{display:inline-block;width:34px;height:6px;border-radius:3px;background:#EEF2F7;margin-right:6px;vertical-align:middle;overflow:hidden}#s2 .s2-bar i{display:block;height:100%}
 #s2 .s2-ws{display:inline-block;min-width:26px;text-align:center;color:#fff;border-radius:7px;padding:2px 6px}
 #s2 .s2-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
@@ -192,12 +194,16 @@ function ddHTML(c) {
   const sel = ST.f[c[0]] || [], base = S.filter(s => pass(s, c[0])), cnt = c[5].map(b => base.filter(s => inB(c[3](s), b)).length);
   return `<details class="s2-dd${sel.length ? ' on' : ''}" data-k="${c[0]}"><summary>${esc(c[1])} <i>${sel.length ? sel.length === 1 ? esc(c[5][sel[0]][0]) : sel.length + ' ranges' : 'Any'} ▾</i></summary><div class="s2-menu">${c[5].map((b, i) => `<label class="${cnt[i] ? '' : 'z'}"><input type="checkbox" data-i="${i}" ${sel.includes(i) ? 'checked' : ''}> ${esc(b[0])} <b>${cnt[i]}</b></label>`).join('')}</div></details>`;
 }
+const FG = { up: 'Overview', na: 'Overview', emp: 'Overview', d1: 'Performance' }, FH = { Overview: 'Size · Analysts' };
+const fgOf = c => FG[c[0]] || c[2];
+/* more Clear buttons (Zev, Nov 24, 2026: "this is a very long screener"): top bar, every filter group, the pill filters, under the panel and under the table */
+const nAct = () => Object.values(ST.f).reduce((a, x) => a + x.length, 0) + ST.cons.length + ST.acc.length + Object.values(ST.ch || {}).reduce((a, x) => a + x.length, 0) + (ST.pre ? 1 : 0) + (ST.th ? 1 : 0) + (ST.sec ? 1 : 0) + (ST.q ? 1 : 0);
+const clrAll = () => { const n = nAct(); return `<button type="button" class="s2-clr${n ? '' : ' off'}" data-clear ${n ? '' : 'disabled'}>✕ Clear all filters${n ? ' (' + n + ')' : ''}</button>`; };
 function panel() {
   const cs = ['Strong Buy', 'Moderate Buy', 'Hold', 'Moderate Sell', 'Sell', 'No rating'], ac = ['Yes', 'Steady', 'No'];
   /* fewer filter rows (Zev, Nov 24, 2026): the two analyst filters and Employees sit in the first row with Overview; the table's column groups are unchanged */
-  const FG = { up: 'Overview', na: 'Overview', emp: 'Overview', d1: 'Performance' }, FH = { Overview: 'Size · Analysts' };
-  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => (FG[c[0]] || c[2]) === gn && c[5]).sort((x, y) => (x[0] === 'd1' ? -1 : 0) - (y[0] === 'd1' ? -1 : 0)); return L.length ? `<div class="s2-g"><h5>${esc(FH[gn] || gn)}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
-    <div class="s2-pills"><div><span class="l">Analyst consensus</span>${cs.map(x => `<button type="button" data-cons="${x}" class="${ST.cons.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
+  return `<div class="s2-panel">${GROUPS.map(gn => { const L = C.filter(c => fgOf(c) === gn && c[5]).sort((x, y) => (x[0] === 'd1' ? -1 : 0) - (y[0] === 'd1' ? -1 : 0)); const ng = L.reduce((a, c) => a + (ST.f[c[0]] || []).length, 0); return L.length ? `<div class="s2-g"><h5>${esc(FH[gn] || gn)}${ng ? ` <button type="button" class="s2-clrg" data-clrg="${esc(gn)}">✕ Clear ${ng}</button>` : ''}</h5><div class="s2-fs">${L.map(ddHTML).join('')}</div></div>` : ''; }).join('')}
+    <div class="s2-pills">${(() => { const np = ST.cons.length + ST.acc.length + Object.values(ST.ch || {}).reduce((a, x) => a + x.length, 0); return np ? `<div style="justify-content:flex-end"><button type="button" class="s2-clrg" data-clrp>✕ Clear ${np} below</button></div>` : ''; })()}<div><span class="l">Analyst consensus</span>${cs.map(x => `<button type="button" data-cons="${x}" class="${ST.cons.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     <div><span class="l">Accelerating growth</span>${ac.map(x => `<button type="button" data-acc="${x}" class="${ST.acc.includes(x) ? 'on' : ''}">${x}</button>`).join('')}</div>
     ${CHIPS.map(([k, lab, V]) => { const have = new Set(S.map(s => String(g(s, k) || 'None Given').toLowerCase())); const vals = V.filter(v => have.has(v.toLowerCase())); return vals.length ? `<div><span class="l">${esc(lab)}</span>${vals.map(x => `<button type="button" data-ch="${k}" data-v="${esc(x)}" class="${((ST.ch || {})[k] || []).includes(x) ? 'on' : ''}">${esc(x)}</button>`).join('')}</div>` : ''; }).join('')}</div></div>`;
 }
@@ -213,12 +219,13 @@ function view() {
       <select id="s2th"><option value="">All themes</option>${[...new Set(S.map(s => s.th))].sort().map(x => `<option ${x === ST.th ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <select id="s2sec"><option value="">All sectors</option>${[...new Set(S.map(s => s.sec))].sort().map(x => `<option ${x === ST.sec ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <button type="button" class="s2-btn${ST.open ? ' pri' : ''}" id="s2f">Filters${act ? ' (' + act + ')' : ''} ${ST.open ? '▴' : '▾'}</button>
-      <span class="s2-cnt">Showing <b>${L.length}</b> of ${S.length}</span></div>
-    ${ST.open ? panel() + `<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:8px 2px 2px"><span class="s2-cnt" style="margin-left:0">Showing <b>${L.length}</b> of ${S.length}</span></div>` : ''}
+      ${act ? clrAll() : ''}<span class="s2-cnt">Showing <b>${L.length}</b> of ${S.length}</span></div>
+    ${ST.open ? panel() + `<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:8px 2px 2px">${clrAll()}<span class="s2-cnt" style="margin-left:0">Showing <b>${L.length}</b> of ${S.length}</span></div>` : ''}
     <div class="s2-cols"><span class="l">Columns:</span>${GROUPS.map(gn => `<button type="button" data-grp="${esc(gn)}" class="${ST.hide.includes(gn) ? '' : 'on'}">${esc(gn)}</button>`).join('')}
       <span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="s2-btn" style="height:30px;font-size:12px" data-paid="Saved screens" data-paid-sub="Save your filters and sorts as named screens, synced to your account on every device.">🔒 Save screen</button></span></div>
     <div class="s2-wrap"><table><thead><tr class="gr"><th></th>${grp.map(([n, k]) => `<th colspan="${k}">${esc(n)}</th>`).join('')}</tr><tr><th data-k="t">Stock ${arrow('t')}</th>${vis.map(c => `<th data-k="${c[0]}">${esc(c[1])}${arrow(c[0])}</th>`).join('')}</tr></thead>
     <tbody>${L.map(s => `<tr><td><a href="#/stock/${esc(s.t)}">${esc(s.t)}</a><small>${esc(s.n)}</small></td>${vis.map(c => `<td>${c[4](c[3](s), s)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${vis.length + 1}" style="text-align:center;padding:30px" class="muted">No stocks pass every filter. Clear a filter to see more.</td></tr>`}</tbody></table></div>
+    ${act ? `<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:10px 2px 0">${clrAll()}<span class="s2-cnt" style="margin-left:0">Showing <b>${L.length}</b> of ${S.length}</span></div>` : ''}
     <p class="muted" style="font-size:12px;margin:10px 0 0">Click a column to sort; Shift+click adds a second sort level. Filters inside a box are "any of"; different boxes must all pass. Numbers in brackets show how many stocks each choice leaves. Data as of the ${esc(X.dfmt ? X.dfmt(TW.asof) : TW.asof || '')} close; scores, ratings and estimates from the same sources as each stock's page. Not investment advice.</p>`;
 }
 function draw() {
@@ -228,7 +235,9 @@ function draw() {
 }
 function wire(box) {
   $$('[data-pre]', box).forEach(b => b.onclick = () => { ST.pre = ST.pre === b.dataset.pre ? '' : b.dataset.pre; draw(); });
-  const clr = $('[data-clear]', box); if (clr) clr.onclick = () => { Object.assign(ST, { q: '', th: '', sec: '', f: {}, cons: [], acc: [], ch: {}, pre: '' }); draw(); };
+  $$('[data-clrg]', box).forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); C.forEach(c => { if (fgOf(c) === b.dataset.clrg) delete ST.f[c[0]]; }); draw(); });
+  $$('[data-clrp]', box).forEach(b => b.onclick = () => { ST.cons = []; ST.acc = []; ST.ch = {}; draw(); });
+  $$('[data-clear]', box).forEach(clr => clr.onclick = () => { Object.assign(ST, { q: '', th: '', sec: '', f: {}, cons: [], acc: [], ch: {}, pre: '' }); draw(); });
   $$('[data-ch]', box).forEach(b => b.onclick = () => { const k = b.dataset.ch, v = b.dataset.v; ST.ch = ST.ch || {}; const L = ST.ch[k] || []; ST.ch[k] = L.includes(v) ? L.filter(x => x !== v) : L.concat(v); draw(); });
   $('#s2q', box).oninput = e => { ST.q = e.target.value; clearTimeout(window.__s2t); window.__s2t = setTimeout(() => { draw(); const q = $('#s2q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 250); };
   $('#s2th', box).onchange = e => { ST.th = e.target.value; draw(); }; $('#s2sec', box).onchange = e => { ST.sec = e.target.value; draw(); };
