@@ -4,7 +4,7 @@ a forward P/E series with 3+ identical quarters in a row is a stale carry-forwar
 a gross margin that is 100% every quarter (payment networks, lenders) is not meaningful, so it is dropped."""
 import json, os
 D = '/home/claude/tw2/data/'
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = (os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 old = {}
 for p in (D + 'qhist.json', os.path.join(REPO, 'qh.json')):
     if os.path.exists(p):

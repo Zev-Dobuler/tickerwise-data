@@ -3,7 +3,7 @@
 (written by the nightly or the 2:30 PM news task: facts only, our own wording, never a copied headline or any article text, never images),
 tags the stocks each headline names (our 167 + every index stock), and writes nx_new.json key TOP = {read, at, A:[[headline, source, url, unix time, [tickers]]]}."""
 import json, os, re, gzip, time
-D = '/home/claude/tw2/data/'; R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+D = '/home/claude/tw2/data/'; R = (os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if not os.path.isdir(os.path.join(R, 'kit')): R = '/home/claude/tickerwise-data'
 raw = json.load(open(D + 'top_raw.json'))
 names = {}

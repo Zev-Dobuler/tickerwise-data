@@ -4,7 +4,7 @@ Previous log: data/whatsup.json or the repo's wh.json. Output: data/whatsup.json
 de-duplicated by (date, headline), older than 30 days dropped, at most 12 per stock."""
 import json, os, datetime
 D = '/home/claude/tw2/data/'
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = (os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 old = {}
 for p in (D + 'whatsup.json', os.path.join(REPO, 'wh.json')):
     if os.path.exists(p):

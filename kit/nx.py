@@ -1,7 +1,7 @@
 """Merge the nightly feature pulls (data/nx_new.json, any subset of SEA, SEG, SI, CG, ETF, TH, NEWS, CALL, plus IX (index universe), TOP (top market headlines), SPE (S&P 500 forward P/E)) into data/nx.json.
 Each key is replaced as a whole for the tickers pulled and stamped with today's date in nx['d']. Same fields for every stock."""
 import json, os, datetime
-D = '/home/claude/tw2/data/'; R = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'nx.json')) else '/home/claude/tickerwise-data'
+D = '/home/claude/tw2/data/'; R = (os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'nx.json')) else '/home/claude/tickerwise-data'
 base = json.load(open(D + 'nx.json')) if os.path.exists(D + 'nx.json') else json.load(open(os.path.join(R, 'nx.json'))) if os.path.exists(os.path.join(R, 'nx.json')) else {'d': {}}
 new = json.load(open(D + 'nx_new.json')); today = new.pop('read', datetime.date.today().isoformat())
 for k, v in new.items():

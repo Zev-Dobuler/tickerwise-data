@@ -29,7 +29,7 @@ hist = json.load(open(hp)) if os.path.exists(hp) else {}
 def S(t): return hist.setdefault(t, {'c': {}, 'v': {}, 'i': None})
 
 # 0) fresh session: seed the store from the last published grid (px.json in the repo; same format for every stock)
-SEED = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'px.json')
+SEED = os.path.join((os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'px.json')
 if not hist and not os.path.exists(SEED): SEED = '/home/claude/tickerwise-data/px.json'
 if not hist and os.path.exists(SEED):
     P = json.load(open(SEED))

@@ -2,7 +2,7 @@
 Stocks missing from the new pull keep their previous values, so one failed page never blanks a stock."""
 import json, os
 D = '/home/claude/tw2/data/'
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = (os.environ.get('TW_REPO') or os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 old = {}
 for p in (D + 'qstats.json', os.path.join(REPO, 'qs.json')):
     if os.path.exists(p):
