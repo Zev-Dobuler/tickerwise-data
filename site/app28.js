@@ -127,7 +127,7 @@ try { const o = JSON.parse(localStorage.getItem('tw_scr2_st') || 'null'); if (o)
 const save = () => { try { localStorage.setItem('tw_scr2_st', JSON.stringify({ hide: ST.hide, sort: ST.sort })); } catch (e) {} };
 const inB = (v, b) => v != null && (b[1] == null || v >= b[1]) && (b[2] == null || v < b[2]);
 function pass(s, skip) {
-  NOF.forEach(k => { if (ST.f[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
+  NOF.forEach(k => { if (ST.f[k]) delete ST.f[k]; }); Object.keys(ST.f).forEach(k => { if (!CK[k]) delete ST.f[k]; }); /* retired filters can't stay on unseen */
   if (ST.sort && ST.sort.some(x => x[0] !== 't' && !CK[x[0]])) ST.sort = ST.sort.filter(x => x[0] === 't' || CK[x[0]]);
   if (ST.q && !(s.t + ' ' + s.n + ' ' + s.th).toUpperCase().includes(ST.q.toUpperCase())) return false;
   if (ST.th && s.th !== ST.th) return false; if (ST.sec && s.sec !== ST.sec) return false;
