@@ -28,7 +28,7 @@ for t in HETF: X.pop(t, None)
 X = {t: v for t, v in X.items() if v}
 
 FK = ['Zev Score', 'Zacks Score', 'Smart Score', 'Analyst Consensus', 'Analyst Price Target %', 'PEG Ratio', 'EPS Growth', 'P/E', 'Forward P/E',
-      'P/E Growth', 'P/S', 'Forward P/S', 'P/S Growth', 'Revenue 1Y Growth', 'Revenue Forward 1Y CAGR', 'Y/Y Revenue Growth', 'Accelerating Growth',
+      'P/E Growth', 'P/S', 'Forward P/S', 'P/S Growth', 'Revenue 1Y Growth', 'Revenue Forward 1Y CAGR', 'Revenue Fwd 2Y CAGR', 'Y/Y Revenue Growth', 'Accelerating Growth',
       'Operating Margin', 'Net Profit Margin', 'Net Income 1Y Growth', 'Free Cash Flow Margin', 'Total Employees', 'Market Cap', 'Next ER Date']
 F = {}
 # No Excel (Zev, Nov 22, 2026): the site's card numbers come from the report's own online-sourced accessors (kit/cardov.js), never the Excel sheet.
@@ -45,6 +45,42 @@ for _t, _o in _co.items():
     if o: F[_t] = o
 for q in L('quotes'):
     if q.get('next_earnings') and q['ticker'] in F: F[q['ticker']]['Next ER Date'] = [q['next_earnings'], None, None]
+# Revenue Fwd 2Y CAGR (Zev, Nov 24, 2026): yearly growth rate from the last 12 months of sales (Fiscal.ai quarters) to analysts'
+# next-fiscal-year revenue estimate (Yahoo), annualised over the real time between the two. A quarter that is less than 60% of the
+# other three is treated as a data error and rebuilt from the same quarter a year earlier and its reported Y/Y growth.
+import datetime as _dt
+def _rows(r):
+    x = r.get('rows'); return json.loads(x) if isinstance(x, str) else (x or [])
+_FC = {r['ticker']: _rows(r) for r in L('fincharts') if r.get('ticker')}
+for r in L('wishx'):
+    if r.get('k') == 'fc' and r.get('ticker') and r['ticker'] not in _FC: _FC[r['ticker']] = _rows(r)
+_YV = {r['ticker']: r for r in L('erscore') if r.get('k') == 'yv' and r.get('ticker')}
+for r in L('wishx'):
+    if r.get('k') == 'yv' and r.get('ticker') and r['ticker'] not in _YV: _YV[r['ticker']] = r
+def _ttm(R):
+    A = [x for x in R if x.get('k') == 'A' and x.get('rev')]
+    if len(A) < 8: A4 = A[-4:]; prev = []
+    else: A4 = A[-4:]; prev = A[-8:-4]
+    if len(A4) < 4: return None
+    out = []
+    for i, q in enumerate(A4):
+        others = sorted(x['rev'] for j, x in enumerate(A4) if j != i); med = others[1]
+        if q['rev'] < 0.6 * med:
+            if prev and prev[i].get('rev') and q.get('yoy') is not None: out.append(prev[i]['rev'] * (1 + q['yoy'] / 100))
+            else: return None
+        else: out.append(q['rev'])
+    return sum(out) * 1e6
+for _t, _y in _YV.items():
+    try:
+        if _y.get('fx') or not _y.get('rev1') or not _y.get('fy_end') or not _y.get('mrq'): continue
+        tt = _ttm(_FC.get(_t, []))
+        if not tt or tt <= 0: continue
+        e = _dt.date.fromisoformat(_y['fy_end']); e1 = e.replace(year=e.year + 1) if not (e.month == 2 and e.day == 29) else e.replace(year=e.year + 1, day=28)
+        yrs = (e1 - _dt.date.fromisoformat(_y['mrq'])).days / 365.25
+        if yrs < 0.75 or yrs > 2.6: continue
+        v = ((_y['rev1'] / tt) ** (1 / yrs) - 1) * 100
+        F.setdefault(_t, {})['Revenue Fwd 2Y CAGR'] = [round(v, 2), None, None]
+    except Exception: pass
 for r in L('wish'):  # wish-list parity: the same Next ER Date line for wish-list stocks (Yahoo earnings date)
     if r.get('k') == 's' and r.get('ed') and r['t'] in F and 'Next ER Date' not in F[r['t']]: F[r['t']]['Next ER Date'] = [r['ed'], None, None]
 FK = FK + ['Gross Margin', 'P/S Compression']
