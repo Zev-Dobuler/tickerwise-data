@@ -96,8 +96,8 @@ const C = [
   ['sh', 'Short % Float', 'Ownership', s => num((XX(s.t).sh || [])[0]), v => v == null ? '<span class="muted">—</span>' : `<span class="${v > 10 ? 'dn' : ''}">${v.toFixed(1)}%</span>`, [['Under 3%', null, 3], ['3% to 10%', 3, 10], ['10% to 20%', 10, 20], ['Over 20%', 20, null]]],
   ['dtc', 'Days to Cover', 'Ownership', s => num((XX(s.t).sh || [])[1]), v => n1(v, 1), [['Over 5 days', 5, null], ['2 to 5 days', 2, 5], ['Under 2 days', null, 2]]]
 ];
-/* columns removed (Zev, Nov 24, 2026): Reaction Days Up, Net Income 1Y, Current Ratio, Institutions Own, Industry Rank */
-['rup', 'nig', 'cr', 'inst', 'ir'].forEach(k => { const i = C.findIndex(c => c[0] === k); if (i >= 0) C.splice(i, 1); });
+/* columns removed (Zev, Nov 24, 2026): Reaction Days Up, Net Income 1Y, Current Ratio, Institutions Own, Industry Rank, EV/EBITDA, 1 Month, Price/FCF, Interest Coverage */
+['rup', 'nig', 'cr', 'inst', 'ir', 'eve', 'r1m', 'pfcf', 'ic'].forEach(k => { const i = C.findIndex(c => c[0] === k); if (i >= 0) C.splice(i, 1); });
 const CK = {}; C.forEach(c => { CK[c[0]] = c; });
 const GROUPS = [...new Set(C.map(c => c[2]))];
 /* ---------- ready-made screens ---------- */
