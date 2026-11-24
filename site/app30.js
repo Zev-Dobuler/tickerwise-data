@@ -136,7 +136,12 @@ function ptlMount() {
   const el = document.createElement('div'); el.className = 'card'; el.id = 'ptl'; el.innerHTML = `<div class="card-h"><h3>Price Chart + Timeline</h3><span class="muted">daily closes, 50- and 200-day averages, with every event pinned to the price</span></div><div class="ptl-body"></div>`;
   m.appendChild(el); ptlDraw(el, t);
 }
-const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ptlMount(); comMerge(); ovOrder(); };
+/* Premium locks (Zev, Nov 24, 2026): saving/updating a thesis and the One-Page Report (PDF) are in the paid plan */
+const LOCKS = [['#r5-ths', 'My Thesis', 'Write and update your thesis on every stock you own, with health checks that flag when the facts change.'],
+  ['a[href^="#/report/"]', 'One-Page Report (PDF)', 'A printable one-page report on any stock: scores, valuation, earnings, analysts and the bull and bear case.']];
+document.addEventListener('click', e => { const L = LOCKS.find(l => e.target.closest && e.target.closest(l[0])); if (!L || !window.twPaid) return; e.preventDefault(); e.stopImmediatePropagation(); window.twPaid(L[1], L[2]); }, true);
+function lockMarks() { $$('#r5-ths, a[href^="#/report/"]').forEach(b => { if (!b.dataset.lk && !/🔒/.test(b.textContent)) { b.dataset.lk = 1; b.insertAdjacentText('afterbegin', '🔒 '); } }); }
+const tick = () => { if (base(location.hash) === '#/tools') tools(); bar(); erDates(); ptlMount(); comMerge(); lockMarks(); ovOrder(); };
 let pend = 0; new MutationObserver(() => { if (pend) return; pend = 1; setTimeout(() => { pend = 0; tick(); }, 80); }).observe(app, { childList: true, subtree: true });
 window.addEventListener('hashchange', () => { setTimeout(tick, 60); setTimeout(tick, 600); }); setTimeout(tick, 300);
 })();
